@@ -3,6 +3,7 @@
 A modern personal finance and mobile budget tracker built with **React Native**, **Expo (TypeScript)**, and **NativeWind (Tailwind CSS)**. Engineered to simplify personal cash flow: manage monthly fixed bills (utilities, rent, internet), recurring subscriptions, and leisure outings with real-time disposable income calculations.
 
 <p align="left">
+  <a href="https://expo.dev/artifacts/eas/4KlACYkfHxU14bITNmFSRYdkuBrz3MH7FVkXu-XggWs.apk"><img src="https://img.shields.io/badge/Download%20APK-Android%20Direct-3DDC84?style=for-the-badge&logo=android&logoColor=white" alt="Download APK" /></a>
   <a href="https://expo.dev/accounts/agustinmilesi/projects/pocket-expenses"><img src="https://img.shields.io/badge/Expo%20Project-pocket--expenses-4630EB?style=for-the-badge&logo=expo" alt="Expo Project" /></a>
   <img src="https://img.shields.io/badge/Platform-iOS%20%7C%20Android%20%7C%20Web-black?style=for-the-badge&logo=expo" alt="Expo Platform" />
   <img src="https://img.shields.io/badge/Expo-SDK%2058-000020?style=for-the-badge&logo=expo" alt="Expo SDK" />
