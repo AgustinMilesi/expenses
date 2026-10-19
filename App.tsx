@@ -29,6 +29,7 @@ import { SpendingBreakdown } from './src/components/SpendingBreakdown';
 import { ExpenseCard } from './src/components/ExpenseCard';
 import { AddExpenseModal } from './src/components/AddExpenseModal';
 import { EditIncomeModal } from './src/components/EditIncomeModal';
+import { UpdateBanner } from './src/components/UpdateBanner';
 import { DEFAULT_BUDGET } from './src/data/mockExpenses';
 
 export default function App() {
@@ -184,6 +185,9 @@ export default function App() {
           showsVerticalScrollIndicator={false}
           contentContainerStyle={{ paddingBottom: 40 }}
         >
+          {/* Over-The-Air Update Alert Banner */}
+          <UpdateBanner />
+
           {/* Main Financial Summary Card */}
           <BudgetSummaryCard
             budget={budget}
