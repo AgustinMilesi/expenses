@@ -3,6 +3,7 @@
 A modern personal finance and mobile budget tracker built with **React Native**, **Expo (TypeScript)**, and **NativeWind (Tailwind CSS)**. Engineered to simplify personal cash flow: manage monthly fixed bills (utilities, rent, internet), recurring subscriptions, and leisure outings with real-time disposable income calculations.
 
 <p align="left">
+  <a href="https://expo.dev/accounts/agustinmilesi/projects/pocket-expenses"><img src="https://img.shields.io/badge/Expo%20Project-pocket--expenses-4630EB?style=for-the-badge&logo=expo" alt="Expo Project" /></a>
   <img src="https://img.shields.io/badge/Platform-iOS%20%7C%20Android%20%7C%20Web-black?style=for-the-badge&logo=expo" alt="Expo Platform" />
   <img src="https://img.shields.io/badge/Expo-SDK%2058-000020?style=for-the-badge&logo=expo" alt="Expo SDK" />
   <img src="https://img.shields.io/badge/React%20Native-0.88-61DAFB?style=for-the-badge&logo=react&logoColor=black" alt="React Native" />
@@ -36,6 +37,13 @@ A modern personal finance and mobile budget tracker built with **React Native**,
 
 ---
 
+## 📲 Over-The-Air (OTA) Updates & Mobile Access
+
+- **Instant testing via Expo Go:** Log in with your Expo account (`agustinmilesi`) inside the **Expo Go** app on iOS or Android. **PocketExpenses** will appear under your projects to launch immediately without scanning QR codes every time.
+- **Automated Commit Syncing:** Every `git push` to `main` triggers a GitHub Action with EAS Update, pushing new code bundles over the air so your phone receives updates automatically.
+
+---
+
 ## 🛠️ Tech Stack
 
 - **Framework**: React Native with Expo SDK 58 (TypeScript strict mode)
@@ -43,6 +51,7 @@ A modern personal finance and mobile budget tracker built with **React Native**,
 - **State & Persistence**: React Hooks + `@react-native-async-storage/async-storage` (offline-first)
 - **Icons**: `@expo/vector-icons` (Ionicons)
 - **Animations**: `react-native-reanimated`
+- **Delivery & OTA**: EAS Update + GitHub Actions CI/CD
 
 ---
 

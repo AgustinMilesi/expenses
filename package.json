@@ -7,6 +7,7 @@
     "@react-native-async-storage/async-storage": "2.2.0",
     "expo": "~58.0.16",
     "expo-status-bar": "~58.0.3",
+    "expo-updates": "~58.0.17",
     "nativewind": "^4.2.7",
     "react": "19.3.0",
     "react-native": "0.88.0",
