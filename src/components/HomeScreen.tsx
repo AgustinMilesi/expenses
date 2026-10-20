@@ -1,89 +1,127 @@
-import React from 'react';
+import React, { useState } from 'react';
 import {
   View,
   Text,
   TouchableOpacity,
   ScrollView,
   StyleSheet,
+  Alert,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import {
-  ContactItem,
+  CategoryFilter,
   Currency,
-  TransactionItem,
-  UserWallet,
+  ExpenseCategory,
+  ExpenseItem,
+  MonthlyBudget,
 } from '../types/expense';
 import { ThemeColors } from '../utils/theme';
-import { formatCurrency } from '../utils/formatters';
+import { calculateTotals, formatCurrency } from '../utils/formatters';
 import { getTranslations } from '../utils/i18n';
 
 interface HomeScreenProps {
-  wallet: UserWallet;
-  contacts: ContactItem[];
-  transactions: TransactionItem[];
+  budget: MonthlyBudget;
+  expenses: ExpenseItem[];
   currency: Currency;
   colors: ThemeColors;
   locale: any;
   onOpenPreferences: () => void;
   onOpenNotifications: () => void;
-  onOpenAchievements: () => void;
-  onNavigateToSend: () => void;
-  onOpenRequest: () => void;
-  onOpenPayment: () => void;
-  onOpenWithdraw: () => void;
-  onAddContact: () => void;
-  onViewAllTransactions: () => void;
-  onSelectContactToSend: (contact: ContactItem) => void;
+  onOpenEditIncome: () => void;
+  onNavigateToAddExpense: (prefilledCategory?: ExpenseCategory) => void;
+  onNavigateToSubs: () => void;
+  onTogglePaid: (expenseId: string) => void;
+  onDeleteExpense: (expenseId: string) => void;
+  onAddSubscription: () => void;
 }
 
 export const HomeScreen: React.FC<HomeScreenProps> = ({
-  wallet,
-  contacts,
-  transactions,
+  budget,
+  expenses,
   currency,
   colors,
   locale,
   onOpenPreferences,
   onOpenNotifications,
-  onOpenAchievements,
-  onNavigateToSend,
-  onOpenRequest,
-  onOpenPayment,
-  onOpenWithdraw,
-  onAddContact,
-  onViewAllTransactions,
-  onSelectContactToSend,
+  onOpenEditIncome,
+  onNavigateToAddExpense,
+  onNavigateToSubs,
+  onTogglePaid,
+  onDeleteExpense,
+  onAddSubscription,
 }) => {
   const t = getTranslations(locale);
+  const totals = calculateTotals(expenses, budget.monthlyIncome);
+
+  const [activeCategoryFilter, setActiveCategoryFilter] = useState<CategoryFilter>('all');
+
+  // Subscriptions list for the horizontal carousel
+  const subscriptions = expenses.filter((e) => e.category === 'subscription');
+
+  // Filtered expenses list
+  const filteredExpenses = expenses.filter((e) => {
+    if (activeCategoryFilter === 'all') return true;
+    return e.category === activeCategoryFilter;
+  });
+
+  const getCategoryIcon = (category: ExpenseCategory) => {
+    switch (category) {
+      case 'micro':
+        return 'cafe-outline';
+      case 'subscription':
+        return 'repeat-outline';
+      case 'fixed':
+        return 'home-outline';
+      case 'leisure':
+        return 'beer-outline';
+      default:
+        return 'receipt-outline';
+    }
+  };
+
+  const getCategoryColor = (category: ExpenseCategory) => {
+    switch (category) {
+      case 'micro':
+        return colors.lime;
+      case 'subscription':
+        return '#8B5CF6';
+      case 'fixed':
+        return '#3B82F6';
+      case 'leisure':
+        return '#F43F5E';
+      default:
+        return colors.textMuted;
+    }
+  };
 
   return (
     <View style={[styles.screen, { backgroundColor: colors.bg }]}>
-      {/* Top Profile Header */}
+      {/* Top Header */}
       <View style={styles.topHeader}>
         <TouchableOpacity
           onPress={onOpenPreferences}
           style={styles.profileButton}
           activeOpacity={0.8}
         >
-          <View style={[styles.profileAvatar, { backgroundColor: colors.card, borderColor: colors.primary }]}>
+          <View style={[styles.profileAvatar, { backgroundColor: colors.card, borderColor: colors.lime }]}>
             <Ionicons name="person" size={20} color={colors.lime} />
           </View>
-          <View style={styles.profileTextContainer}>
+          <View>
             <Text style={[styles.profileName, { color: colors.text }]}>
-              {wallet.accountHolder}
+              {t.appName}
             </Text>
-            <Text style={[styles.profileHandle, { color: colors.textMuted }]}>
-              @{wallet.username}
+            <Text style={[styles.profileTagline, { color: colors.textMuted }]}>
+              {t.appTagline}
             </Text>
           </View>
         </TouchableOpacity>
 
         <View style={styles.headerRightActions}>
           <TouchableOpacity
-            onPress={onOpenAchievements}
+            onPress={onOpenPreferences}
             style={[styles.headerIconBtn, { backgroundColor: colors.card, borderColor: colors.cardBorder }]}
           >
-            <Ionicons name="trophy-outline" size={18} color={colors.lime} />
+            <Ionicons name="options-outline" size={18} color={colors.lime} />
           </TouchableOpacity>
 
           <TouchableOpacity
@@ -100,15 +138,15 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({
         showsVerticalScrollIndicator={false}
         contentContainerStyle={styles.scrollContainer}
       >
-        {/* Main Hero Total Balance Neon Lime Card */}
+        {/* Main Hero Disposable Balance Neon Lime Card */}
         <View style={[styles.heroCard, { backgroundColor: colors.lime }]}>
           {/* Card Top Row */}
           <View style={styles.heroTopRow}>
-            <Text style={[styles.totalBalanceLabel, { color: colors.limeText }]}>
-              {t.totalBalance}
+            <Text style={[styles.heroLabel, { color: colors.limeText }]}>
+              {t.remainingBalance}
             </Text>
             <TouchableOpacity
-              onPress={onOpenPreferences}
+              onPress={onOpenEditIncome}
               hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
             >
               <Ionicons name="ellipsis-horizontal" size={22} color={colors.limeText} />
@@ -118,68 +156,85 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({
           {/* Amount and Trend Badge */}
           <View style={styles.heroAmountRow}>
             <Text style={[styles.heroAmountText, { color: colors.limeText }]}>
-              {formatCurrency(wallet.balance, currency)}
+              {formatCurrency(totals.remainingBalance, currency)}
             </Text>
-            <View style={[styles.trendBadge, { backgroundColor: colors.card }]}>
-              <Ionicons name="arrow-up" size={12} color={colors.lime} />
-              <Text style={[styles.trendBadgeText, { color: colors.lime }]}>
-                {wallet.weeklyGrowthPercentage}% {t.lastWeekGrowth}
+            <View style={[styles.healthBadge, { backgroundColor: colors.card }]}>
+              <Ionicons
+                name={totals.percentageUsed > 85 ? 'warning-outline' : 'shield-checkmark-outline'}
+                size={13}
+                color={totals.percentageUsed > 85 ? colors.danger : colors.lime}
+              />
+              <Text style={[styles.healthBadgeText, { color: colors.lime }]}>
+                {100 - totals.percentageUsed}% {t.safeToSpend}
               </Text>
             </View>
           </View>
 
+          {/* Subtitle with Income & Committed Breakdown */}
+          <Text style={[styles.heroBreakdownText, { color: 'rgba(12, 16, 8, 0.75)' }]}>
+            {t.monthlyIncome}: {formatCurrency(budget.monthlyIncome, currency)} • {t.totalCommitted}: {formatCurrency(totals.total, currency)}
+          </Text>
+
           {/* 4 Action Buttons inside Lime Card */}
           <View style={styles.heroActionsRow}>
-            {/* Send */}
+            {/* 1. + Gasto / Microgasto */}
             <View style={styles.heroActionItem}>
               <TouchableOpacity
-                onPress={onNavigateToSend}
+                onPress={() => onNavigateToAddExpense()}
                 style={[styles.heroActionCircle, { backgroundColor: colors.card }]}
                 activeOpacity={0.8}
               >
-                <Ionicons name="arrow-up-outline" size={20} color={colors.lime} style={{ transform: [{ rotate: '45deg' }] }} />
+                <Ionicons name="add" size={24} color={colors.lime} />
               </TouchableOpacity>
-              <Text style={[styles.heroActionLabel, { color: colors.limeText }]}>{t.send}</Text>
+              <Text style={[styles.heroActionLabel, { color: colors.limeText }]}>
+                {t.addExpenseAction}
+              </Text>
             </View>
 
-            {/* Request */}
+            {/* 2. Suscripciones */}
             <View style={styles.heroActionItem}>
               <TouchableOpacity
-                onPress={onOpenRequest}
+                onPress={onNavigateToSubs}
                 style={[styles.heroActionCircle, { backgroundColor: colors.card }]}
                 activeOpacity={0.8}
               >
-                <Ionicons name="arrow-down-outline" size={20} color={colors.lime} style={{ transform: [{ rotate: '45deg' }] }} />
+                <Ionicons name="repeat-outline" size={20} color={colors.lime} />
               </TouchableOpacity>
-              <Text style={[styles.heroActionLabel, { color: colors.limeText }]}>{t.request}</Text>
+              <Text style={[styles.heroActionLabel, { color: colors.limeText }]}>
+                {t.subsAction}
+              </Text>
             </View>
 
-            {/* Payment */}
+            {/* 3. Fijos */}
             <View style={styles.heroActionItem}>
               <TouchableOpacity
-                onPress={onOpenPayment}
+                onPress={() => setActiveCategoryFilter('fixed')}
                 style={[styles.heroActionCircle, { backgroundColor: colors.card }]}
                 activeOpacity={0.8}
               >
-                <Ionicons name="scan-outline" size={20} color={colors.lime} />
+                <Ionicons name="home-outline" size={20} color={colors.lime} />
               </TouchableOpacity>
-              <Text style={[styles.heroActionLabel, { color: colors.limeText }]}>{t.payment}</Text>
+              <Text style={[styles.heroActionLabel, { color: colors.limeText }]}>
+                {t.fixedAction}
+              </Text>
             </View>
 
-            {/* Withdraw */}
+            {/* 4. Editar Ingreso */}
             <View style={styles.heroActionItem}>
               <TouchableOpacity
-                onPress={onOpenWithdraw}
+                onPress={onOpenEditIncome}
                 style={[styles.heroActionCircle, { backgroundColor: colors.card }]}
                 activeOpacity={0.8}
               >
-                <Ionicons name="file-tray-full-outline" size={20} color={colors.lime} />
+                <Ionicons name="wallet-outline" size={20} color={colors.lime} />
               </TouchableOpacity>
-              <Text style={[styles.heroActionLabel, { color: colors.limeText }]}>{t.withdraw}</Text>
+              <Text style={[styles.heroActionLabel, { color: colors.limeText }]}>
+                {t.editIncomeAction}
+              </Text>
             </View>
           </View>
 
-          {/* Bottom Pull Notch */}
+          {/* Bottom Pull Tab */}
           <View style={styles.pullNotchContainer}>
             <View style={[styles.pullNotch, { backgroundColor: colors.lime }]}>
               <Ionicons name="chevron-down" size={14} color={colors.limeText} />
@@ -187,115 +242,168 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({
           </View>
         </View>
 
-        {/* Favourite Contacts Section */}
+        {/* Section: Subscriptions & Upcoming Due Dates (The horizontal cards) */}
         <View style={styles.sectionContainer}>
           <View style={styles.sectionHeader}>
             <Text style={[styles.sectionTitle, { color: colors.text }]}>
-              {t.favouriteContacts}
+              {t.upcomingSubs} ({subscriptions.length})
             </Text>
-            <TouchableOpacity onPress={onAddContact}>
+            <TouchableOpacity onPress={onNavigateToSubs}>
               <Text style={[styles.viewAllText, { color: colors.textMuted }]}>
                 {t.viewAll}
               </Text>
             </TouchableOpacity>
           </View>
 
-          <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.contactsScroll}>
-            {/* Add Contact Button */}
+          <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.subsScroll}>
+            {/* Add Sub Button */}
             <TouchableOpacity
-              onPress={onAddContact}
-              style={[styles.addContactCard, { backgroundColor: colors.card, borderColor: colors.cardBorder }]}
+              onPress={onAddSubscription}
+              style={[styles.addSubCard, { backgroundColor: colors.card, borderColor: colors.cardBorder }]}
             >
               <Ionicons name="add" size={22} color={colors.lime} />
             </TouchableOpacity>
 
-            {/* Contact Pills */}
-            {contacts.map((contact) => (
+            {/* Subscription Pills */}
+            {subscriptions.map((sub) => (
               <TouchableOpacity
-                key={contact.id}
-                onPress={() => onSelectContactToSend(contact)}
-                style={[styles.contactCard, { backgroundColor: colors.card, borderColor: colors.cardBorder }]}
+                key={sub.id}
+                onPress={() => onTogglePaid(sub.id)}
+                style={[
+                  styles.subCard,
+                  {
+                    backgroundColor: colors.card,
+                    borderColor: sub.isPaid ? colors.lime : colors.cardBorder,
+                  },
+                ]}
               >
-                <View style={[styles.contactAvatarCircle, { backgroundColor: colors.cardLight }]}>
-                  <Text style={[styles.contactInitialsText, { color: colors.lime }]}>
-                    {contact.initials}
-                  </Text>
+                <View style={[styles.subIconCircle, { backgroundColor: colors.cardLight }]}>
+                  <Ionicons name="film-outline" size={16} color={colors.lime} />
                 </View>
                 <View>
-                  <Text style={[styles.contactNameText, { color: colors.text }]} numberOfLines={1}>
-                    {contact.name}
+                  <Text style={[styles.subNameText, { color: colors.text }]} numberOfLines={1}>
+                    {sub.title}
                   </Text>
-                  <Text style={[styles.contactMaskedText, { color: colors.textDim }]}>
-                    {contact.maskedAccount}
+                  <Text style={[styles.subDetailText, { color: colors.textDim }]}>
+                    {t.dueDay(sub.dueDate)} • {formatCurrency(sub.amount, currency)}
                   </Text>
+                </View>
+                <View
+                  style={[
+                    styles.paidBadge,
+                    { backgroundColor: sub.isPaid ? 'rgba(198, 248, 39, 0.15)' : 'rgba(239, 68, 68, 0.15)' },
+                  ]}
+                >
+                  <Ionicons
+                    name={sub.isPaid ? 'checkmark-circle' : 'time-outline'}
+                    size={14}
+                    color={sub.isPaid ? colors.lime : colors.danger}
+                  />
                 </View>
               </TouchableOpacity>
             ))}
           </ScrollView>
         </View>
 
-        {/* Transactions Section */}
+        {/* Section: Gastos & Microgastos (Recent Expenses list) */}
         <View style={styles.sectionContainer}>
           <View style={styles.sectionHeader}>
             <Text style={[styles.sectionTitle, { color: colors.text }]}>
-              {t.transactions}
+              {t.recentExpenses} ({filteredExpenses.length})
             </Text>
-            <TouchableOpacity onPress={onViewAllTransactions}>
-              <Text style={[styles.viewAllText, { color: colors.textMuted }]}>
-                {t.viewAll}
+            <TouchableOpacity onPress={() => onNavigateToAddExpense()}>
+              <Text style={[styles.viewAllText, { color: colors.lime }]}>
+                + {t.addExpenseAction}
               </Text>
             </TouchableOpacity>
           </View>
 
-          <Text style={[styles.subDateHeader, { color: colors.textDim }]}>
-            {t.today}
-          </Text>
+          {/* Category Filter Pills */}
+          <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.filterPillsRow}>
+            {(['all', 'micro', 'subscription', 'fixed', 'leisure'] as CategoryFilter[]).map((cat) => {
+              const isActive = activeCategoryFilter === cat;
+              return (
+                <TouchableOpacity
+                  key={cat}
+                  onPress={() => setActiveCategoryFilter(cat)}
+                  style={[
+                    styles.filterPill,
+                    {
+                      backgroundColor: isActive ? colors.lime : colors.card,
+                      borderColor: isActive ? colors.lime : colors.cardBorder,
+                    },
+                  ]}
+                >
+                  <Text
+                    style={[
+                      styles.filterPillText,
+                      { color: isActive ? colors.limeText : colors.textMuted },
+                    ]}
+                  >
+                    {t[cat] || cat}
+                  </Text>
+                </TouchableOpacity>
+              );
+            })}
+          </ScrollView>
 
-          {/* Transactions List */}
-          {transactions.length === 0 ? (
+          {/* Expenses List */}
+          {filteredExpenses.length === 0 ? (
             <View style={[styles.emptyBox, { backgroundColor: colors.card, borderColor: colors.cardBorder }]}>
-              <Ionicons name="receipt-outline" size={32} color={colors.textDim} />
-              <Text style={[styles.emptyTitle, { color: colors.text }]}>{t.noTransactionsTitle}</Text>
-              <Text style={[styles.emptyDesc, { color: colors.textMuted }]}>{t.noTransactionsDesc}</Text>
+              <Ionicons name="wallet-outline" size={32} color={colors.textDim} />
+              <Text style={[styles.emptyTitle, { color: colors.text }]}>{t.noExpensesTitle}</Text>
+              <Text style={[styles.emptyDesc, { color: colors.textMuted }]}>{t.noExpensesDesc}</Text>
             </View>
           ) : (
-            transactions.slice(0, 5).map((trx) => {
-              const isIncome = trx.type === 'receive' || trx.type === 'deposit';
+            filteredExpenses.map((expense) => {
+              const catIcon = getCategoryIcon(expense.category);
+              const catColor = getCategoryColor(expense.category);
+
               return (
                 <View
-                  key={trx.id}
-                  style={[styles.trxItem, { backgroundColor: colors.card, borderColor: colors.cardBorder }]}
+                  key={expense.id}
+                  style={[styles.expenseItem, { backgroundColor: colors.card, borderColor: colors.cardBorder }]}
                 >
-                  <View style={styles.trxLeft}>
-                    <View style={[styles.trxIconCircle, { backgroundColor: colors.cardLight }]}>
-                      <Ionicons
-                        name={isIncome ? 'arrow-down-outline' : 'arrow-up-outline'}
-                        size={18}
-                        color={isIncome ? colors.lime : colors.danger}
-                        style={{ transform: [{ rotate: '45deg' }] }}
-                      />
+                  <TouchableOpacity
+                    onPress={() => onTogglePaid(expense.id)}
+                    style={styles.expenseLeft}
+                    activeOpacity={0.7}
+                  >
+                    <View style={[styles.expenseIconCircle, { backgroundColor: colors.cardLight }]}>
+                      <Ionicons name={catIcon as any} size={18} color={catColor} />
                     </View>
-                    <View>
-                      <Text style={[styles.trxTitle, { color: colors.text }]}>{trx.title}</Text>
-                      <Text style={[styles.trxId, { color: colors.textDim }]}>
-                        TrxID: {trx.trxId}
+                    <View style={{ flex: 1 }}>
+                      <Text style={[styles.expenseTitle, { color: colors.text }]}>
+                        {expense.title}
+                      </Text>
+                      <Text style={[styles.expenseSub, { color: colors.textDim }]}>
+                        {expense.notes || t[expense.category] || expense.category} • {t.dueDay(expense.dueDate)}
                       </Text>
                     </View>
-                  </View>
+                  </TouchableOpacity>
 
-                  <View style={styles.trxRight}>
-                    <Text
+                  <View style={styles.expenseRight}>
+                    <Text style={[styles.expenseAmount, { color: colors.text }]}>
+                      -{formatCurrency(expense.amount, currency)}
+                    </Text>
+                    <TouchableOpacity
+                      onPress={() => onTogglePaid(expense.id)}
                       style={[
-                        styles.trxAmount,
-                        { color: isIncome ? colors.lime : colors.danger },
+                        styles.statusPill,
+                        {
+                          backgroundColor: expense.isPaid ? 'rgba(198, 248, 39, 0.15)' : 'rgba(239, 68, 68, 0.15)',
+                        },
                       ]}
                     >
-                      {isIncome ? '+' : '-'}
-                      {formatCurrency(trx.amount, currency)}
-                    </Text>
-                    <Text style={[styles.trxTime, { color: colors.textDim }]}>
-                      {trx.time}
-                    </Text>
+                      <Text
+                        style={[
+                          styles.statusText,
+                          { color: expense.isPaid ? colors.lime : colors.danger },
+                        ]}
+                      >
+                        {expense.isPaid ? t.paid : t.pending}
+                      </Text>
+                    </TouchableOpacity>
                   </View>
                 </View>
               );
@@ -332,14 +440,13 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
   },
-  profileTextContainer: {},
   profileName: {
     fontSize: 16,
     fontWeight: '900',
     letterSpacing: -0.2,
   },
-  profileHandle: {
-    fontSize: 12,
+  profileTagline: {
+    fontSize: 11,
     fontWeight: '600',
   },
   headerRightActions: {
@@ -354,7 +461,6 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    position: 'relative',
   },
   notificationDot: {
     width: 8,
@@ -387,12 +493,14 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     marginBottom: 8,
   },
-  totalBalanceLabel: {
+  heroLabel: {
     fontSize: 13,
     fontWeight: '700',
+    textTransform: 'uppercase',
+    letterSpacing: 0.5,
   },
   heroAmountRow: {
-    marginBottom: 24,
+    marginBottom: 6,
   },
   heroAmountText: {
     fontSize: 38,
@@ -400,18 +508,23 @@ const styles = StyleSheet.create({
     letterSpacing: -0.8,
     marginBottom: 8,
   },
-  trendBadge: {
+  healthBadge: {
     alignSelf: 'flex-start',
     flexDirection: 'row',
     alignItems: 'center',
     paddingHorizontal: 10,
     paddingVertical: 5,
     borderRadius: 14,
-    gap: 4,
+    gap: 6,
   },
-  trendBadgeText: {
+  healthBadgeText: {
     fontSize: 11,
     fontWeight: '800',
+  },
+  heroBreakdownText: {
+    fontSize: 11,
+    fontWeight: '600',
+    marginBottom: 20,
   },
   heroActionsRow: {
     flexDirection: 'row',
@@ -467,21 +580,22 @@ const styles = StyleSheet.create({
     fontSize: 12,
     fontWeight: '600',
   },
-  contactsScroll: {
+  subsScroll: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: 12,
     paddingVertical: 4,
   },
-  addContactCard: {
+  addSubCard: {
     width: 54,
     height: 60,
     borderRadius: 20,
     borderWidth: 1.5,
+    borderStyle: 'dashed',
     justifyContent: 'center',
     alignItems: 'center',
   },
-  contactCard: {
+  subCard: {
     flexDirection: 'row',
     alignItems: 'center',
     paddingVertical: 10,
@@ -490,31 +604,44 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     gap: 10,
   },
-  contactAvatarCircle: {
-    width: 38,
-    height: 38,
-    borderRadius: 19,
+  subIconCircle: {
+    width: 36,
+    height: 36,
+    borderRadius: 18,
     justifyContent: 'center',
     alignItems: 'center',
   },
-  contactInitialsText: {
-    fontSize: 13,
-    fontWeight: '800',
-  },
-  contactNameText: {
+  subNameText: {
     fontSize: 13,
     fontWeight: '700',
   },
-  contactMaskedText: {
+  subDetailText: {
     fontSize: 10,
     fontWeight: '600',
   },
-  subDateHeader: {
-    fontSize: 12,
-    fontWeight: '700',
-    marginBottom: 10,
+  paidBadge: {
+    width: 24,
+    height: 24,
+    borderRadius: 12,
+    justifyContent: 'center',
+    alignItems: 'center',
   },
-  trxItem: {
+  filterPillsRow: {
+    flexDirection: 'row',
+    gap: 8,
+    marginBottom: 14,
+  },
+  filterPill: {
+    paddingHorizontal: 14,
+    paddingVertical: 7,
+    borderRadius: 14,
+    borderWidth: 1,
+  },
+  filterPillText: {
+    fontSize: 11,
+    fontWeight: '700',
+  },
+  expenseItem: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
@@ -523,38 +650,44 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     marginBottom: 10,
   },
-  trxLeft: {
+  expenseLeft: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: 12,
+    flex: 1,
   },
-  trxIconCircle: {
+  expenseIconCircle: {
     width: 40,
     height: 40,
     borderRadius: 20,
     justifyContent: 'center',
     alignItems: 'center',
   },
-  trxTitle: {
+  expenseTitle: {
     fontSize: 13,
     fontWeight: '700',
     marginBottom: 2,
   },
-  trxId: {
+  expenseSub: {
     fontSize: 11,
     fontWeight: '600',
   },
-  trxRight: {
+  expenseRight: {
     alignItems: 'flex-end',
+    gap: 4,
   },
-  trxAmount: {
+  expenseAmount: {
     fontSize: 14,
     fontWeight: '800',
-    marginBottom: 2,
   },
-  trxTime: {
-    fontSize: 11,
-    fontWeight: '600',
+  statusPill: {
+    paddingHorizontal: 8,
+    paddingVertical: 3,
+    borderRadius: 8,
+  },
+  statusText: {
+    fontSize: 10,
+    fontWeight: '800',
   },
   emptyBox: {
     borderRadius: 20,

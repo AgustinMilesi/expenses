@@ -64,6 +64,12 @@ export const AddExpenseModal: React.FC<AddExpenseModalProps> = ({
       icon: 'restaurant-outline',
       color: colors.success,
     },
+    {
+      id: 'micro',
+      label: locale === 'es' ? 'Microgasto (Café, Kiosco)' : 'Micro-spend',
+      icon: 'cafe-outline',
+      color: colors.lime,
+    },
   ];
 
   const handleSave = () => {

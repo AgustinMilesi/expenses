@@ -1,27 +1,14 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import {
-  AccentTheme,
-  AppLocale,
-  AppTheme,
-  CardItem,
-  ContactItem,
   Currency,
-  TransactionItem,
-  UserWallet,
+  ExpenseItem,
+  MonthlyBudget,
+  UserPreferences,
 } from '../types/expense';
 
-const PREFS_STORAGE_KEY = '@wallet_preferences_v3';
-const WALLET_STORAGE_KEY = '@wallet_user_data_v3';
-const TRANSACTIONS_STORAGE_KEY = '@wallet_transactions_v3';
-const CONTACTS_STORAGE_KEY = '@wallet_contacts_v3';
-const CARDS_STORAGE_KEY = '@wallet_cards_v3';
-
-export interface UserPreferences {
-  theme: AppTheme;
-  accent: AccentTheme;
-  locale: AppLocale;
-  currency: Currency;
-}
+const PREFS_STORAGE_KEY = '@pocket_preferences_v4';
+const BUDGET_STORAGE_KEY = '@pocket_budget_v4';
+const EXPENSES_STORAGE_KEY = '@pocket_expenses_v4';
 
 export const DEFAULT_PREFERENCES: UserPreferences = {
   theme: 'dark',
@@ -30,82 +17,139 @@ export const DEFAULT_PREFERENCES: UserPreferences = {
   currency: 'USD',
 };
 
-export const INITIAL_WALLET: UserWallet = {
-  accountHolder: 'Janvis David',
-  username: 'janvisd',
-  accountNumber: '••••••5890',
-  balance: 23590.73,
-  transferLimit: 10000.0,
+export const DEFAULT_BUDGET: MonthlyBudget = {
+  month: '2026-10',
+  monthlyIncome: 2500,
   currency: 'USD',
-  weeklyGrowthPercentage: 24,
+  savingsGoal: 500,
 };
 
-export const INITIAL_CONTACTS: ContactItem[] = [
+// Initial realistic expenses representing subscriptions, fixed bills, and microgastos
+export const INITIAL_EXPENSES: ExpenseItem[] = [
+  // Suscripciones
   {
-    id: 'c1',
-    name: 'Alina',
-    handle: '@alina',
-    maskedAccount: '••••46',
-    initials: 'AL',
+    id: 'sub-1',
+    title: 'Netflix 4K',
+    amount: 19.99,
+    category: 'subscription',
+    dueDate: 8,
+    isPaid: true,
+    notes: 'Streaming familiar',
+    iconName: 'film-outline',
+    color: '#E50914',
+    createdAt: '2026-10-01',
   },
   {
-    id: 'c2',
-    name: 'Mark',
-    handle: '@mark_k',
-    maskedAccount: '••••37',
-    initials: 'MK',
+    id: 'sub-2',
+    title: 'Spotify Premium',
+    amount: 11.99,
+    category: 'subscription',
+    dueDate: 14,
+    isPaid: true,
+    notes: 'Música sin anuncios',
+    iconName: 'musical-notes-outline',
+    color: '#1DB954',
+    createdAt: '2026-10-02',
   },
   {
-    id: 'c3',
-    name: 'Rachel',
-    handle: '@rachel',
-    maskedAccount: '••••81',
-    initials: 'RC',
+    id: 'sub-3',
+    title: 'Gimnasio & Crossfit',
+    amount: 45.0,
+    category: 'subscription',
+    dueDate: 10,
+    isPaid: true,
+    notes: 'Membresía pase libre',
+    iconName: 'barbell-outline',
+    color: '#10B981',
+    createdAt: '2026-10-02',
   },
   {
-    id: 'c4',
-    name: 'Kuraishi',
-    handle: '@kuraishi',
-    maskedAccount: '••••19',
-    initials: 'KH',
+    id: 'sub-4',
+    title: 'iCloud / Google One',
+    amount: 9.99,
+    category: 'subscription',
+    dueDate: 20,
+    isPaid: false,
+    notes: 'Almacenamiento 2TB',
+    iconName: 'cloud-outline',
+    color: '#6366F1',
+    createdAt: '2026-10-03',
   },
-];
 
-export const INITIAL_TRANSACTIONS: TransactionItem[] = [
+  // Fijos
   {
-    id: 'tx-1',
-    type: 'send',
-    title: 'Send Money to Kuraishi H.',
-    recipientOrSender: 'Kuraishi H.',
-    amount: 450.0,
-    trxId: 'CJ4901TUZ0',
-    time: '05:29 PM',
-    date: 'Today',
-    category: 'transfer',
+    id: 'fix-1',
+    title: 'Alquiler Departamento',
+    amount: 650.0,
+    category: 'fixed',
+    dueDate: 5,
+    isPaid: true,
+    notes: 'Transferencia mensual',
+    iconName: 'home-outline',
+    color: '#3B82F6',
+    createdAt: '2026-10-01',
   },
   {
-    id: 'tx-2',
-    type: 'receive',
-    title: 'Receive from Alina',
-    recipientOrSender: 'Alina',
-    amount: 1250.0,
-    trxId: 'CJ790Z8UX4',
-    time: '12:37 PM',
-    date: 'Today',
-    category: 'income',
+    id: 'fix-2',
+    title: 'Internet Fibra 500MB',
+    amount: 35.0,
+    category: 'fixed',
+    dueDate: 15,
+    isPaid: false,
+    notes: 'Conexión simétrica',
+    iconName: 'wifi-outline',
+    color: '#06B6D4',
+    createdAt: '2026-10-02',
   },
-];
+  {
+    id: 'fix-3',
+    title: 'Luz y Electricidad',
+    amount: 42.0,
+    category: 'fixed',
+    dueDate: 22,
+    isPaid: false,
+    notes: 'Factura mensual',
+    iconName: 'flash-outline',
+    color: '#F59E0B',
+    createdAt: '2026-10-04',
+  },
 
-export const INITIAL_CARDS: CardItem[] = [
+  // Microgastos
   {
-    id: 'card-1',
-    cardHolder: 'Janvis David',
-    cardNumber: '7820 5500 0835 3501',
-    expiry: '12/30',
-    type: 'Credit',
-    brand: 'VISA',
-    isFrozen: false,
-    dailyLimit: 5000,
+    id: 'mic-1',
+    title: 'Café de Especialidad',
+    amount: 4.5,
+    category: 'micro',
+    dueDate: 20,
+    isPaid: true,
+    notes: 'Cafetería de paso',
+    iconName: 'cafe-outline',
+    color: '#C6F827',
+    createdAt: '2026-10-20',
+  },
+  {
+    id: 'mic-2',
+    title: 'Kiosco / Snacks',
+    amount: 3.2,
+    category: 'micro',
+    dueDate: 20,
+    isPaid: true,
+    notes: 'Golosinas y agua',
+    iconName: 'fast-food-outline',
+    color: '#F43F5E',
+    createdAt: '2026-10-20',
+  },
+  {
+    id: 'mic-3',
+    title: 'Taxi / Uber Corto',
+    amount: 8.5,
+    category: 'micro',
+    dueDate: 19,
+    isPaid: true,
+    notes: 'Regreso a casa',
+    iconName: 'car-outline',
+    color: '#06B6D4',
+    createdAt: '2026-10-19',
   },
 ];
 
@@ -130,86 +174,53 @@ export async function savePreferences(prefs: UserPreferences): Promise<void> {
   }
 }
 
-// Wallet
-export async function loadWallet(): Promise<UserWallet> {
+// Budget
+export async function loadBudget(): Promise<MonthlyBudget> {
   try {
-    const raw = await AsyncStorage.getItem(WALLET_STORAGE_KEY);
+    const raw = await AsyncStorage.getItem(BUDGET_STORAGE_KEY);
     if (raw) {
       return JSON.parse(raw);
     }
   } catch (err) {
-    console.warn('Error loading wallet:', err);
+    console.warn('Error loading budget:', err);
   }
-  return INITIAL_WALLET;
+  return DEFAULT_BUDGET;
 }
 
-export async function saveWallet(wallet: UserWallet): Promise<void> {
+export async function saveBudget(budget: MonthlyBudget): Promise<void> {
   try {
-    await AsyncStorage.setItem(WALLET_STORAGE_KEY, JSON.stringify(wallet));
+    await AsyncStorage.setItem(BUDGET_STORAGE_KEY, JSON.stringify(budget));
   } catch (err) {
-    console.error('Error saving wallet:', err);
+    console.error('Error saving budget:', err);
   }
 }
 
-// Transactions
-export async function loadTransactions(): Promise<TransactionItem[]> {
+// Expenses
+export async function loadExpenses(): Promise<ExpenseItem[]> {
   try {
-    const raw = await AsyncStorage.getItem(TRANSACTIONS_STORAGE_KEY);
+    const raw = await AsyncStorage.getItem(EXPENSES_STORAGE_KEY);
     if (raw) {
       return JSON.parse(raw);
     }
   } catch (err) {
-    console.warn('Error loading transactions:', err);
+    console.warn('Error loading expenses:', err);
   }
-  return INITIAL_TRANSACTIONS;
+  return INITIAL_EXPENSES;
 }
 
-export async function saveTransactions(transactions: TransactionItem[]): Promise<void> {
+export async function saveExpenses(expenses: ExpenseItem[]): Promise<void> {
   try {
-    await AsyncStorage.setItem(TRANSACTIONS_STORAGE_KEY, JSON.stringify(transactions));
+    await AsyncStorage.setItem(EXPENSES_STORAGE_KEY, JSON.stringify(expenses));
   } catch (err) {
-    console.error('Error saving transactions:', err);
-  }
-}
-
-// Contacts
-export async function loadContacts(): Promise<ContactItem[]> {
-  try {
-    const raw = await AsyncStorage.getItem(CONTACTS_STORAGE_KEY);
-    if (raw) {
-      return JSON.parse(raw);
-    }
-  } catch (err) {
-    console.warn('Error loading contacts:', err);
-  }
-  return INITIAL_CONTACTS;
-}
-
-export async function saveContacts(contacts: ContactItem[]): Promise<void> {
-  try {
-    await AsyncStorage.setItem(CONTACTS_STORAGE_KEY, JSON.stringify(contacts));
-  } catch (err) {
-    console.error('Error saving contacts:', err);
+    console.error('Error saving expenses:', err);
   }
 }
 
-// Cards
-export async function loadCards(): Promise<CardItem[]> {
+export async function clearAllExpenses(): Promise<ExpenseItem[]> {
   try {
-    const raw = await AsyncStorage.getItem(CARDS_STORAGE_KEY);
-    if (raw) {
-      return JSON.parse(raw);
-    }
+    await AsyncStorage.removeItem(EXPENSES_STORAGE_KEY);
   } catch (err) {
-    console.warn('Error loading cards:', err);
+    console.error('Error clearing expenses:', err);
   }
-  return INITIAL_CARDS;
-}
-
-export async function saveCards(cards: CardItem[]): Promise<void> {
-  try {
-    await AsyncStorage.setItem(CARDS_STORAGE_KEY, JSON.stringify(cards));
-  } catch (err) {
-    console.error('Error saving cards:', err);
-  }
+  return [];
 }

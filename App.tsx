@@ -8,40 +8,34 @@ import {
   ActiveTab,
   AppLocale,
   AppTheme,
-  CardItem,
-  ContactItem,
   Currency,
-  TransactionItem,
-  UserWallet,
+  ExpenseCategory,
+  ExpenseItem,
+  MonthlyBudget,
 } from './src/types/expense';
 import {
-  loadCards,
-  loadContacts,
+  loadBudget,
+  loadExpenses,
   loadPreferences,
-  loadTransactions,
-  loadWallet,
-  saveCards,
-  saveContacts,
+  saveBudget,
+  saveExpenses,
   savePreferences,
-  saveTransactions,
-  saveWallet,
-  INITIAL_WALLET,
+  DEFAULT_BUDGET,
 } from './src/utils/storage';
 import { getThemeColors } from './src/utils/theme';
 import { getTranslations } from './src/utils/i18n';
-import { generateTrxId, getCurrentTimeFormatted, formatCurrency } from './src/utils/formatters';
+import { calculateTotals } from './src/utils/formatters';
 
 // Screen & Modal Components
 import { HomeScreen } from './src/components/HomeScreen';
-import { SendMoneyScreen } from './src/components/SendMoneyScreen';
-import { CardsScreen } from './src/components/CardsScreen';
+import { AddExpenseScreen } from './src/components/AddExpenseScreen';
+import { SubscriptionsScreen } from './src/components/SubscriptionsScreen';
 import { HistoryView } from './src/components/HistoryView';
 import { SearchView } from './src/components/SearchView';
 import { BottomNavBar } from './src/components/BottomNavBar';
 import { PreferencesModal } from './src/components/PreferencesModal';
-import { QRScannerModal } from './src/components/QRScannerModal';
-import { TopupModal } from './src/components/TopupModal';
-import { AddContactModal } from './src/components/AddContactModal';
+import { EditIncomeModal } from './src/components/EditIncomeModal';
+import { AddExpenseModal } from './src/components/AddExpenseModal';
 import { LegalModal } from './src/components/LegalModal';
 import { UpdateBanner } from './src/components/UpdateBanner';
 
@@ -49,10 +43,8 @@ export default function App() {
   const [isLoading, setIsLoading] = useState(true);
 
   // Core Data
-  const [wallet, setWallet] = useState<UserWallet>(INITIAL_WALLET);
-  const [contacts, setContacts] = useState<ContactItem[]>([]);
-  const [transactions, setTransactions] = useState<TransactionItem[]>([]);
-  const [cards, setCards] = useState<CardItem[]>([]);
+  const [budget, setBudget] = useState<MonthlyBudget>(DEFAULT_BUDGET);
+  const [expenses, setExpenses] = useState<ExpenseItem[]>([]);
 
   // Preferences
   const [theme, setTheme] = useState<AppTheme>('dark');
@@ -62,44 +54,39 @@ export default function App() {
 
   // Navigation
   const [activeTab, setActiveTab] = useState<ActiveTab>('home');
-  const [currentScreen, setCurrentScreen] = useState<'main' | 'sendMoney'>('main');
+  const [currentScreen, setCurrentScreen] = useState<'main' | 'quickExpense'>('main');
+  const [quickExpenseCategory, setQuickExpenseCategory] = useState<ExpenseCategory>('micro');
 
   // Modals
   const [isPreferencesOpen, setIsPreferencesOpen] = useState(false);
-  const [isQRScannerOpen, setIsQRScannerOpen] = useState(false);
-  const [isTopupOpen, setIsTopupOpen] = useState(false);
-  const [isAddContactOpen, setIsAddContactOpen] = useState(false);
+  const [isEditIncomeOpen, setIsEditIncomeOpen] = useState(false);
+  const [isAddExpenseModalOpen, setIsAddExpenseModalOpen] = useState(false);
   const [legalModalType, setLegalModalType] = useState<'terms' | 'privacy' | 'cookies' | null>(null);
 
   // Theme & Translations
   const colors = useMemo(() => getThemeColors(theme, accent), [theme, accent]);
   const t = useMemo(() => getTranslations(locale), [locale]);
 
-  // Load Initial Persisted Data
+  // Load Persisted Data on Startup
   useEffect(() => {
     async function init() {
       try {
-        const [loadedPrefs, loadedWallet, loadedContacts, loadedTrx, loadedCards] =
-          await Promise.all([
-            loadPreferences(),
-            loadWallet(),
-            loadContacts(),
-            loadTransactions(),
-            loadCards(),
-          ]);
+        const [loadedPrefs, loadedBudget, loadedExpenses] = await Promise.all([
+          loadPreferences(),
+          loadBudget(),
+          loadExpenses(),
+        ]);
 
         setTheme(loadedPrefs.theme);
         setAccent(loadedPrefs.accent || 'lime');
         setLocale(loadedPrefs.locale);
         setCurrency(loadedPrefs.currency);
 
-        setWallet({
-          ...loadedWallet,
-          currency: loadedPrefs.currency || loadedWallet.currency,
+        setBudget({
+          ...loadedBudget,
+          currency: loadedPrefs.currency || loadedBudget.currency,
         });
-        setContacts(loadedContacts);
-        setTransactions(loadedTrx);
-        setCards(loadedCards);
+        setExpenses(loadedExpenses);
       } catch (err) {
         console.error('Error during initialization:', err);
       } finally {
@@ -127,153 +114,58 @@ export default function App() {
 
   const handleSelectCurrency = async (newCurrency: Currency) => {
     setCurrency(newCurrency);
-    const updatedWallet = { ...wallet, currency: newCurrency };
-    setWallet(updatedWallet);
+    const updatedBudget = { ...budget, currency: newCurrency };
+    setBudget(updatedBudget);
     await Promise.all([
       savePreferences({ theme, accent, locale, currency: newCurrency }),
-      saveWallet(updatedWallet),
+      saveBudget(updatedBudget),
     ]);
   };
 
-  // Transaction & Financial Logic (Strictly dynamic, no sample numbers!)
-  const handleSendSuccess = async (amount: number, recipientName: string) => {
-    const newBalance = Math.max(0, wallet.balance - amount);
-    const updatedWallet: UserWallet = {
-      ...wallet,
-      balance: newBalance,
+  // Expense Handlers
+  const handleSaveExpense = async (newItem: Omit<ExpenseItem, 'id' | 'createdAt'>) => {
+    const created: ExpenseItem = {
+      ...newItem,
+      id: `exp-${Date.now()}`,
+      createdAt: new Date().toISOString(),
     };
 
-    const newTrx: TransactionItem = {
-      id: `tx-${Date.now()}`,
-      type: 'send',
-      title: `Send Money to ${recipientName}`,
-      recipientOrSender: recipientName,
-      amount,
-      trxId: generateTrxId(),
-      time: getCurrentTimeFormatted(),
-      date: 'Today',
-      category: 'transfer',
-    };
-
-    const updatedTrx = [newTrx, ...transactions];
-
-    setWallet(updatedWallet);
-    setTransactions(updatedTrx);
-
-    await Promise.all([saveWallet(updatedWallet), saveTransactions(updatedTrx)]);
+    const updated = [created, ...expenses];
+    setExpenses(updated);
+    await saveExpenses(updated);
 
     Alert.alert(
-      t.transferSuccessTitle,
-      t.transferSuccessMsg(formatCurrency(amount, currency), recipientName),
-      [
-        {
-          text: 'OK',
-          onPress: () => setCurrentScreen('main'),
-        },
-      ]
+      t.expenseSavedTitle,
+      t.expenseSavedMsg(`$${newItem.amount.toFixed(2)}`, newItem.title),
+      [{ text: 'OK', onPress: () => setCurrentScreen('main') }]
     );
   };
 
-  const handleConfirmTopup = async (amount: number) => {
-    const newBalance = wallet.balance + amount;
-    const updatedWallet: UserWallet = {
-      ...wallet,
-      balance: newBalance,
-    };
-
-    const newTrx: TransactionItem = {
-      id: `tx-${Date.now()}`,
-      type: 'deposit',
-      title: 'Topup / Account Deposit',
-      recipientOrSender: 'Bank Account Topup',
-      amount,
-      trxId: generateTrxId(),
-      time: getCurrentTimeFormatted(),
-      date: 'Today',
-      category: 'income',
-    };
-
-    const updatedTrx = [newTrx, ...transactions];
-
-    setWallet(updatedWallet);
-    setTransactions(updatedTrx);
-
-    await Promise.all([saveWallet(updatedWallet), saveTransactions(updatedTrx)]);
-
-    Alert.alert('Topup Success', `Successfully added ${formatCurrency(amount, currency)} to your balance.`);
-  };
-
-  const handleToggleFreeze = async (cardId: string) => {
-    const updatedCards = cards.map((c) =>
-      c.id === cardId ? { ...c, isFrozen: !c.isFrozen } : c
+  const handleTogglePaid = async (expenseId: string) => {
+    const updated = expenses.map((e) =>
+      e.id === expenseId ? { ...e, isPaid: !e.isPaid } : e
     );
-    setCards(updatedCards);
-    await saveCards(updatedCards);
-    const card = updatedCards.find((c) => c.id === cardId);
-    Alert.alert(
-      card?.isFrozen ? 'Card Frozen' : 'Card Active',
-      card?.isFrozen ? t.cardFrozenNotice : 'Your card is now ready for transactions.'
-    );
+    setExpenses(updated);
+    await saveExpenses(updated);
   };
 
-  const handleAddCard = async () => {
-    const randomCardNumber = `7820 ${Math.floor(1000 + Math.random() * 9000)} ${Math.floor(1000 + Math.random() * 9000)} ${Math.floor(1000 + Math.random() * 9000)}`;
-    const newCard: CardItem = {
-      id: `card-${Date.now()}`,
-      cardHolder: wallet.accountHolder,
-      cardNumber: randomCardNumber,
-      expiry: '12/32',
-      type: 'Credit',
-      brand: 'VISA',
-      isFrozen: false,
-      dailyLimit: 7500,
-    };
-    const updated = [...cards, newCard];
-    setCards(updated);
-    await saveCards(updated);
-    Alert.alert('Card Added', `A new ${newCard.brand} ${newCard.type} card was generated.`);
+  const handleDeleteExpense = async (expenseId: string) => {
+    const updated = expenses.filter((e) => e.id !== expenseId);
+    setExpenses(updated);
+    await saveExpenses(updated);
   };
 
-  const handleAddContact = async (name: string, handle: string) => {
-    const initials = name
-      .split(' ')
-      .map((n) => n[0])
-      .slice(0, 2)
-      .join('')
-      .toUpperCase();
-
-    const masked = `••••${Math.floor(10 + Math.random() * 90)}`;
-    const newContact: ContactItem = {
-      id: `c-${Date.now()}`,
-      name,
-      handle,
-      maskedAccount: masked,
-      initials: initials || 'CO',
-    };
-
-    const updated = [...contacts, newContact];
-    setContacts(updated);
-    await saveContacts(updated);
+  const handleMarkAllPaid = async () => {
+    const updated = expenses.map((e) => ({ ...e, isPaid: true }));
+    setExpenses(updated);
+    await saveExpenses(updated);
+    Alert.alert('Suscripciones al día', 'Todas las suscripciones y gastos fijos se marcaron como pagados.');
   };
 
-  const handleQuickAction = (action: string) => {
-    switch (action) {
-      case 'statements':
-        Alert.alert('Statements', 'Account statements export generated and sent to email.');
-        break;
-      case 'bills':
-        Alert.alert('Bills Pay', 'All linked utility and credit bills are up to date.');
-        break;
-      case 'loans':
-        Alert.alert('Instant Loans', 'Pre-approved loan credit line up to $15,000.00 at 0% APR.');
-        break;
-      case 'limit':
-        Alert.alert('Daily Limit', `Current card daily limit: ${formatCurrency(5000, currency)}`);
-        break;
-      case 'deposits':
-        Alert.alert('High-Yield Deposits', 'Active savings vault generating 7.8% APY.');
-        break;
-    }
+  const handleSaveIncome = async (newIncome: number) => {
+    const updatedBudget = { ...budget, monthlyIncome: newIncome };
+    setBudget(updatedBudget);
+    await saveBudget(updatedBudget);
   };
 
   if (isLoading) {
@@ -290,102 +182,106 @@ export default function App() {
         <StatusBar style={theme === 'dark' ? 'light' : 'dark'} />
         <UpdateBanner colors={colors} locale={locale} />
 
-        {/* View Switcher: Send Money Screen vs Main Navigation */}
-        {currentScreen === 'sendMoney' ? (
-          <SendMoneyScreen
-            wallet={wallet}
-            contacts={contacts}
+        {/* View Switcher: Quick Expense Screen vs Main Tab Navigation */}
+        {currentScreen === 'quickExpense' ? (
+          <AddExpenseScreen
+            budget={budget}
+            expenses={expenses}
             currency={currency}
             colors={colors}
             locale={locale}
+            initialCategory={quickExpenseCategory}
             onBack={() => setCurrentScreen('main')}
-            onOpenNotifications={() => Alert.alert(t.notifications, 'All accounts synchronized.')}
-            onAddContact={() => setIsAddContactOpen(true)}
-            onSendSuccess={handleSendSuccess}
+            onOpenNotifications={() => Alert.alert(t.notifications, 'No hay alertas pendientes.')}
+            onSaveExpense={handleSaveExpense}
           />
         ) : (
           <View style={styles.contentWrapper}>
+            {/* 1. Dashboard (Home) */}
             {activeTab === 'home' && (
               <HomeScreen
-                wallet={wallet}
-                contacts={contacts}
-                transactions={transactions}
+                budget={budget}
+                expenses={expenses}
                 currency={currency}
                 colors={colors}
                 locale={locale}
                 onOpenPreferences={() => setIsPreferencesOpen(true)}
-                onOpenNotifications={() => Alert.alert(t.notifications, 'No pending alerts.')}
-                onOpenAchievements={() => Alert.alert(t.achievements, 'VIP Level 2: 1.5% cashback on all card payments.')}
-                onNavigateToSend={() => setCurrentScreen('sendMoney')}
-                onOpenRequest={() => {
-                  Alert.alert('Request Money', 'Share your payment link or QR code to receive funds.', [
-                    { text: 'Show QR Code', onPress: () => setIsQRScannerOpen(true) },
-                    { text: 'Cancel', style: 'cancel' },
-                  ]);
+                onOpenNotifications={() => Alert.alert(t.notifications, 'Gastos y suscripciones al día.')}
+                onOpenEditIncome={() => setIsEditIncomeOpen(true)}
+                onNavigateToAddExpense={(cat) => {
+                  setQuickExpenseCategory(cat || 'micro');
+                  setCurrentScreen('quickExpense');
                 }}
-                onOpenPayment={() => setIsQRScannerOpen(true)}
-                onOpenWithdraw={() => {
-                  Alert.alert('Withdraw Funds', `Transfer to linked bank account? Balance: ${formatCurrency(wallet.balance, currency)}`, [
-                    {
-                      text: 'Withdraw $200.00',
-                      onPress: () => handleSendSuccess(200, 'Linked Bank Checking Acct'),
-                    },
-                    { text: 'Cancel', style: 'cancel' },
-                  ]);
+                onNavigateToSubs={() => setActiveTab('subs')}
+                onTogglePaid={handleTogglePaid}
+                onDeleteExpense={handleDeleteExpense}
+                onAddSubscription={() => {
+                  setQuickExpenseCategory('subscription');
+                  setIsAddExpenseModalOpen(true);
                 }}
-                onAddContact={() => setIsAddContactOpen(true)}
-                onViewAllTransactions={() => setActiveTab('history')}
-                onSelectContactToSend={(c) => setCurrentScreen('sendMoney')}
               />
             )}
 
-            {activeTab === 'cards' && (
-              <CardsScreen
-                cards={cards}
-                wallet={wallet}
+            {/* 2. Subscriptions & Fixed Bills */}
+            {activeTab === 'subs' && (
+              <SubscriptionsScreen
+                budget={budget}
+                expenses={expenses}
                 currency={currency}
                 colors={colors}
                 locale={locale}
                 onBack={() => setActiveTab('home')}
-                onOpenNotifications={() => Alert.alert(t.notifications, 'No card alerts.')}
-                onNavigateToSend={() => setCurrentScreen('sendMoney')}
-                onOpenTopup={() => setIsTopupOpen(true)}
-                onToggleFreeze={handleToggleFreeze}
-                onAddCard={handleAddCard}
-                onOpenQuickAction={handleQuickAction}
+                onOpenNotifications={() => Alert.alert(t.notifications, 'Sin alertas de vencimiento.')}
+                onNavigateToAddExpense={() => {
+                  setQuickExpenseCategory('subscription');
+                  setCurrentScreen('quickExpense');
+                }}
+                onTogglePaid={handleTogglePaid}
+                onAddSubscription={() => {
+                  setQuickExpenseCategory('subscription');
+                  setIsAddExpenseModalOpen(true);
+                }}
+                onMarkAllPaid={handleMarkAllPaid}
+                onOpenEditIncome={() => setIsEditIncomeOpen(true)}
+                onDeleteExpense={handleDeleteExpense}
               />
             )}
 
+            {/* 3. History */}
             {activeTab === 'history' && (
               <HistoryView
-                transactions={transactions}
+                expenses={expenses}
                 currency={currency}
                 colors={colors}
                 locale={locale}
                 onOpenPreferences={() => setIsPreferencesOpen(true)}
+                onTogglePaid={handleTogglePaid}
                 onClearHistory={async () => {
-                  setTransactions([]);
-                  await saveTransactions([]);
+                  setExpenses([]);
+                  await saveExpenses([]);
                 }}
               />
             )}
 
+            {/* 4. Search */}
             {activeTab === 'search' && (
               <SearchView
-                transactions={transactions}
-                contacts={contacts}
+                expenses={expenses}
                 currency={currency}
                 colors={colors}
                 locale={locale}
-                onSelectContact={(c) => setCurrentScreen('sendMoney')}
+                onTogglePaid={handleTogglePaid}
               />
             )}
 
-            {/* Floating Curved Bottom Navigation Dock */}
+            {/* Floating Cyber Lime Navigation Dock */}
             <BottomNavBar
               activeTab={activeTab}
               onTabChange={setActiveTab}
-              onOpenQRScanner={() => setIsQRScannerOpen(true)}
+              onOpenQuickExpense={() => {
+                setQuickExpenseCategory('micro');
+                setCurrentScreen('quickExpense');
+              }}
               colors={colors}
               locale={locale}
             />
@@ -411,38 +307,28 @@ export default function App() {
           colors={colors}
         />
 
-        {/* 2. QR Scanner Modal */}
-        <QRScannerModal
-          visible={isQRScannerOpen}
-          onClose={() => setIsQRScannerOpen(false)}
-          wallet={wallet}
+        {/* 2. Edit Monthly Income Modal */}
+        <EditIncomeModal
+          visible={isEditIncomeOpen}
+          currentIncome={budget.monthlyIncome}
           currency={currency}
+          locale={locale}
           colors={colors}
-          onSimulateReceive={(amount, from) => {
-            handleConfirmTopup(amount);
-          }}
+          onClose={() => setIsEditIncomeOpen(false)}
+          onSave={handleSaveIncome}
         />
 
-        {/* 3. Topup Modal */}
-        <TopupModal
-          visible={isTopupOpen}
-          onClose={() => setIsTopupOpen(false)}
+        {/* 3. Detailed Add Expense / Subscription Modal */}
+        <AddExpenseModal
+          visible={isAddExpenseModalOpen}
           currency={currency}
-          colors={colors}
           locale={locale}
-          onConfirmTopup={handleConfirmTopup}
+          colors={colors}
+          onClose={() => setIsAddExpenseModalOpen(false)}
+          onSave={handleSaveExpense}
         />
 
-        {/* 4. Add Contact Modal */}
-        <AddContactModal
-          visible={isAddContactOpen}
-          onClose={() => setIsAddContactOpen(false)}
-          colors={colors}
-          locale={locale}
-          onAddContact={handleAddContact}
-        />
-
-        {/* 5. In-App Legal & Compliance Modal */}
+        {/* 4. In-App Legal & Compliance Modal */}
         <LegalModal
           visible={legalModalType !== null}
           onClose={() => setLegalModalType(null)}

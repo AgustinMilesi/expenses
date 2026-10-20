@@ -1,5 +1,5 @@
 import React from 'react';
-import { View, Text, TouchableOpacity, StyleSheet, Platform } from 'react-native';
+import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { ActiveTab } from '../types/expense';
 import { ThemeColors } from '../utils/theme';
@@ -8,7 +8,7 @@ import { getTranslations } from '../utils/i18n';
 interface BottomNavBarProps {
   activeTab: ActiveTab;
   onTabChange: (tab: ActiveTab) => void;
-  onOpenQRScanner: () => void;
+  onOpenQuickExpense: () => void;
   colors: ThemeColors;
   locale: any;
 }
@@ -16,7 +16,7 @@ interface BottomNavBarProps {
 export const BottomNavBar: React.FC<BottomNavBarProps> = ({
   activeTab,
   onTabChange,
-  onOpenQRScanner,
+  onOpenQuickExpense,
   colors,
   locale,
 }) => {
@@ -33,7 +33,7 @@ export const BottomNavBar: React.FC<BottomNavBarProps> = ({
           },
         ]}
       >
-        {/* Tab 1: Home */}
+        {/* Tab 1: Home (Resumen) */}
         <TouchableOpacity
           onPress={() => onTabChange('home')}
           style={styles.tabItem}
@@ -54,31 +54,31 @@ export const BottomNavBar: React.FC<BottomNavBarProps> = ({
           </Text>
         </TouchableOpacity>
 
-        {/* Tab 2: Cards */}
+        {/* Tab 2: Subs (Suscripciones & Fijos) */}
         <TouchableOpacity
-          onPress={() => onTabChange('cards')}
+          onPress={() => onTabChange('subs')}
           style={styles.tabItem}
           activeOpacity={0.7}
         >
           <Ionicons
-            name={activeTab === 'cards' ? 'card' : 'card-outline'}
+            name={activeTab === 'subs' ? 'repeat' : 'repeat-outline'}
             size={22}
-            color={activeTab === 'cards' ? colors.lime : colors.textDim}
+            color={activeTab === 'subs' ? colors.lime : colors.textDim}
           />
           <Text
             style={[
               styles.tabLabel,
-              { color: activeTab === 'cards' ? colors.lime : colors.textDim },
+              { color: activeTab === 'subs' ? colors.lime : colors.textDim },
             ]}
           >
-            {t.cardsTab}
+            {t.subsTab}
           </Text>
         </TouchableOpacity>
 
-        {/* Center Floating Action Button: QR Scanner */}
+        {/* Center Floating Action Button: Quick Add Expense (+) */}
         <View style={styles.centerFabAnchor}>
           <TouchableOpacity
-            onPress={onOpenQRScanner}
+            onPress={onOpenQuickExpense}
             style={[
               styles.fabButton,
               {
@@ -88,7 +88,7 @@ export const BottomNavBar: React.FC<BottomNavBarProps> = ({
             ]}
             activeOpacity={0.85}
           >
-            <Ionicons name="scan" size={26} color={colors.limeText} />
+            <Ionicons name="add" size={32} color={colors.limeText} />
           </TouchableOpacity>
         </View>
 
@@ -177,9 +177,9 @@ const styles = StyleSheet.create({
     top: -14,
   },
   fabButton: {
-    width: 54,
-    height: 54,
-    borderRadius: 27,
+    width: 56,
+    height: 56,
+    borderRadius: 28,
     justifyContent: 'center',
     alignItems: 'center',
     shadowOpacity: 0.5,

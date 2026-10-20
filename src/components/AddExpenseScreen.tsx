@@ -6,59 +6,73 @@ import {
   ScrollView,
   StyleSheet,
   Alert,
+  TextInput,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
-import { ContactItem, Currency, UserWallet } from '../types/expense';
+import {
+  Currency,
+  ExpenseCategory,
+  ExpenseItem,
+  MonthlyBudget,
+  QuickCategoryItem,
+} from '../types/expense';
 import { ThemeColors } from '../utils/theme';
-import { formatCurrency } from '../utils/formatters';
+import { calculateTotals, formatCurrency } from '../utils/formatters';
 import { getTranslations } from '../utils/i18n';
 
-interface SendMoneyScreenProps {
-  wallet: UserWallet;
-  contacts: ContactItem[];
+interface AddExpenseScreenProps {
+  budget: MonthlyBudget;
+  expenses: ExpenseItem[];
   currency: Currency;
   colors: ThemeColors;
   locale: any;
+  initialCategory?: ExpenseCategory;
   onBack: () => void;
   onOpenNotifications: () => void;
-  onAddContact: () => void;
-  onSendSuccess: (amount: number, contactName: string) => void;
+  onSaveExpense: (item: Omit<ExpenseItem, 'id' | 'createdAt'>) => void;
 }
 
-export const SendMoneyScreen: React.FC<SendMoneyScreenProps> = ({
-  wallet,
-  contacts,
+const QUICK_PRESETS: QuickCategoryItem[] = [
+  { id: 'q1', title: 'Café de Especialidad', category: 'micro', defaultAmount: 4.5, iconName: 'cafe-outline' },
+  { id: 'q2', title: 'Kiosco / Snacks', category: 'micro', defaultAmount: 3.2, iconName: 'fast-food-outline' },
+  { id: 'q3', title: 'Taxi / Uber Corto', category: 'micro', defaultAmount: 8.5, iconName: 'car-outline' },
+  { id: 'q4', title: 'Almuerzo / Comida', category: 'leisure', defaultAmount: 15.0, iconName: 'restaurant-outline' },
+  { id: 'q5', title: 'Supermercado', category: 'fixed', defaultAmount: 45.0, iconName: 'cart-outline' },
+  { id: 'q6', title: 'Farmacia / Salud', category: 'fixed', defaultAmount: 20.0, iconName: 'medkit-outline' },
+];
+
+export const AddExpenseScreen: React.FC<AddExpenseScreenProps> = ({
+  budget,
+  expenses,
   currency,
   colors,
   locale,
+  initialCategory = 'micro',
   onBack,
   onOpenNotifications,
-  onAddContact,
-  onSendSuccess,
+  onSaveExpense,
 }) => {
   const t = getTranslations(locale);
+  const totals = calculateTotals(expenses, budget.monthlyIncome);
 
-  // Dynamic input amount state (in cents: 150000 = 1,500.00)
   const [amountCents, setAmountCents] = useState<number>(0);
-  const [selectedContact, setSelectedContact] = useState<ContactItem | null>(
-    contacts.length > 0 ? contacts[0] : null
-  );
-  const [isSending, setIsSending] = useState(false);
+  const [title, setTitle] = useState<string>('Café / Microgasto');
+  const [category, setCategory] = useState<ExpenseCategory>(initialCategory);
+  const [isSaving, setIsSaving] = useState(false);
 
   const amountValue = amountCents / 100;
-  const transferLimit = wallet.transferLimit || 10000;
-  const sliderPercentage = Math.min(100, Math.max(0, (amountValue / transferLimit) * 100));
+  const projectedBalance = Math.max(0, totals.remainingBalance - amountValue);
+  const budgetUtilization = budget.monthlyIncome > 0 ? Math.min(100, (amountValue / budget.monthlyIncome) * 100) : 0;
 
   // Keypad Handlers
   const handleKeyPress = (val: string) => {
     if (val === 'backspace') {
       setAmountCents((prev) => Math.floor(prev / 10));
     } else if (val === 'enter') {
-      handleConfirmSend();
+      handleConfirmSave();
     } else {
       const digit = parseInt(val, 10);
       if (!isNaN(digit)) {
-        // Prevent overflow
         if (amountCents < 100000000) {
           setAmountCents((prev) => prev * 10 + digit);
         }
@@ -66,27 +80,36 @@ export const SendMoneyScreen: React.FC<SendMoneyScreenProps> = ({
     }
   };
 
-  const handleConfirmSend = () => {
-    if (amountValue <= 0) {
-      Alert.alert(t.sendMoneyTitle, t.amountMustBeGreaterThanZero);
-      return;
+  const handleSelectPreset = (preset: QuickCategoryItem) => {
+    setTitle(preset.title);
+    setCategory(preset.category);
+    if (preset.defaultAmount) {
+      setAmountCents(Math.round(preset.defaultAmount * 100));
     }
-    if (amountValue > wallet.balance) {
-      Alert.alert(t.sendMoneyTitle, t.insufficientFunds);
-      return;
-    }
-
-    const recipientName = selectedContact ? selectedContact.name : 'Recipient';
-    setIsSending(true);
-
-    setTimeout(() => {
-      setIsSending(false);
-      onSendSuccess(amountValue, recipientName);
-      setAmountCents(0);
-    }, 600);
   };
 
-  const formattedAmount = formatCurrency(amountValue, currency);
+  const handleConfirmSave = () => {
+    if (amountValue <= 0) {
+      Alert.alert(t.recordExpenseTitle, t.amountMustBeGreaterThanZero);
+      return;
+    }
+
+    setIsSaving(true);
+    setTimeout(() => {
+      setIsSaving(false);
+      onSaveExpense({
+        title: title.trim() || 'Gasto',
+        amount: amountValue,
+        category,
+        dueDate: new Date().getDate(),
+        isPaid: true,
+        iconName: category === 'micro' ? 'cafe-outline' : 'receipt-outline',
+        color: category === 'micro' ? colors.lime : '#3B82F6',
+        notes: `${t[category] || category} • Registrado con teclado rápido`,
+      });
+      setAmountCents(0);
+    }, 400);
+  };
 
   return (
     <View style={[styles.screen, { backgroundColor: colors.bg }]}>
@@ -100,7 +123,7 @@ export const SendMoneyScreen: React.FC<SendMoneyScreenProps> = ({
         </TouchableOpacity>
 
         <Text style={[styles.headerTitle, { color: colors.text }]}>
-          {t.sendMoneyTitle}
+          {t.recordExpenseTitle}
         </Text>
 
         <TouchableOpacity
@@ -115,61 +138,68 @@ export const SendMoneyScreen: React.FC<SendMoneyScreenProps> = ({
         showsVerticalScrollIndicator={false}
         contentContainerStyle={styles.scrollContainer}
       >
-        {/* Transfer From Hero Lime Card */}
-        <View style={[styles.transferCard, { backgroundColor: colors.lime }]}>
-          <View style={styles.transferCardHeader}>
-            <Text style={[styles.transferFromLabel, { color: colors.limeText }]}>
-              {t.transferFrom}
+        {/* Budget Impact Hero Lime Card */}
+        <View style={[styles.impactCard, { backgroundColor: colors.lime }]}>
+          <View style={styles.impactCardHeader}>
+            <Text style={[styles.impactLabel, { color: colors.limeText }]}>
+              {t.budgetImpact}
             </Text>
-            <TouchableOpacity hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}>
-              <Ionicons name="ellipsis-horizontal" size={20} color={colors.limeText} />
-            </TouchableOpacity>
+            <View style={[styles.categoryBadge, { backgroundColor: colors.card }]}>
+              <Text style={[styles.categoryBadgeText, { color: colors.lime }]}>
+                {t[category] || category}
+              </Text>
+            </View>
           </View>
 
-          <View style={styles.transferCardBody}>
-            <View style={styles.accountInfoLeft}>
-              <View style={[styles.accountAvatar, { backgroundColor: colors.bg }]}>
-                <Ionicons name="person" size={18} color={colors.lime} />
-              </View>
-              <View>
-                <Text style={[styles.accountTitle, { color: colors.limeText }]}>
-                  {t.myAccount}
-                </Text>
-                <Text style={[styles.accountMasked, { color: 'rgba(12, 16, 8, 0.7)' }]}>
-                  {wallet.accountNumber}
-                </Text>
-              </View>
+          <View style={styles.impactBody}>
+            <View>
+              <Text style={[styles.balanceAfterLabel, { color: 'rgba(12, 16, 8, 0.7)' }]}>
+                {t.balanceAfterExpense}
+              </Text>
+              <Text style={[styles.projectedBalanceText, { color: colors.limeText }]}>
+                {formatCurrency(projectedBalance, currency)}
+              </Text>
             </View>
 
-            {/* Balance Pill */}
-            <View style={[styles.balancePill, { backgroundColor: colors.card }]}>
-              <Text style={[styles.balancePillText, { color: colors.lime }]}>
-                {formatCurrency(wallet.balance, currency)}
+            <View style={[styles.currentBalancePill, { backgroundColor: colors.card }]}>
+              <Ionicons name="wallet-outline" size={14} color={colors.lime} style={{ marginRight: 6 }} />
+              <Text style={[styles.currentBalancePillText, { color: colors.lime }]}>
+                {formatCurrency(totals.remainingBalance, currency)}
               </Text>
-              <Ionicons name="card-outline" size={15} color={colors.lime} style={{ marginLeft: 6 }} />
             </View>
           </View>
         </View>
 
-        {/* Amount Centered Display */}
+        {/* Big Amount Display with Caret */}
         <View style={styles.amountDisplayContainer}>
           <View style={styles.amountRow}>
             <Text style={[styles.amountText, { color: colors.text }]}>
-              {formattedAmount}
+              {formatCurrency(amountValue, currency)}
             </Text>
-            {/* Glowing neon cursor */}
             <View style={[styles.cursor, { backgroundColor: colors.primary }]} />
           </View>
         </View>
 
-        {/* Transfer Limits Slider */}
+        {/* Title Input */}
+        <View style={[styles.titleInputContainer, { backgroundColor: colors.card, borderColor: colors.cardBorder }]}>
+          <Ionicons name="pencil-outline" size={18} color={colors.lime} style={{ marginRight: 10 }} />
+          <TextInput
+            value={title}
+            onChangeText={setTitle}
+            placeholder="Concepto del gasto (ej. Café, Taxi...)"
+            placeholderTextColor={colors.textDim}
+            style={[styles.titleInput, { color: colors.text }]}
+          />
+        </View>
+
+        {/* Budget Impact Slider */}
         <View style={styles.limitsContainer}>
           <View style={styles.limitsHeader}>
             <Text style={[styles.limitsLabel, { color: colors.textDim }]}>
-              {t.transferLimits}
+              {t.budgetUtilization}
             </Text>
             <Text style={[styles.limitsMax, { color: colors.textMuted }]}>
-              {formatCurrency(transferLimit, currency)}
+              {budgetUtilization.toFixed(1)}%
             </Text>
           </View>
           <View style={[styles.sliderTrack, { backgroundColor: colors.cardBorder }]}>
@@ -177,8 +207,8 @@ export const SendMoneyScreen: React.FC<SendMoneyScreenProps> = ({
               style={[
                 styles.sliderFill,
                 {
-                  width: `${sliderPercentage}%`,
-                  backgroundColor: colors.primary,
+                  width: `${Math.min(100, budgetUtilization)}%`,
+                  backgroundColor: budgetUtilization > 25 ? colors.danger : colors.primary,
                 },
               ]}
             />
@@ -186,7 +216,7 @@ export const SendMoneyScreen: React.FC<SendMoneyScreenProps> = ({
               style={[
                 styles.sliderThumb,
                 {
-                  left: `${sliderPercentage}%`,
+                  left: `${Math.min(100, budgetUtilization)}%`,
                   backgroundColor: colors.primary,
                   borderColor: colors.bg,
                 },
@@ -195,72 +225,40 @@ export const SendMoneyScreen: React.FC<SendMoneyScreenProps> = ({
           </View>
         </View>
 
-        {/* Quick Send Section */}
+        {/* Quick Presets Row (The Quick Send row repurposed) */}
         <View style={styles.quickSendSection}>
-          <View style={styles.quickSendHeader}>
-            <Text style={[styles.quickSendTitle, { color: colors.text }]}>
-              {t.quickSend}
-            </Text>
-            <TouchableOpacity onPress={onAddContact}>
-              <Text style={[styles.viewAllText, { color: colors.textMuted }]}>
-                {t.viewAll}
-              </Text>
-            </TouchableOpacity>
-          </View>
+          <Text style={[styles.quickSendTitle, { color: colors.text }]}>
+            {t.quickPickLabel}
+          </Text>
 
-          <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.contactsRow}>
-            {/* Add Contact Button */}
-            <TouchableOpacity
-              onPress={onAddContact}
-              style={[styles.addContactBtn, { borderColor: colors.cardBorder, backgroundColor: colors.card }]}
-            >
-              <Ionicons name="add" size={24} color={colors.primary} />
-            </TouchableOpacity>
-
-            {/* Contact Items */}
-            {contacts.map((contact) => {
-              const isSelected = selectedContact?.id === contact.id;
-              return (
-                <TouchableOpacity
-                  key={contact.id}
-                  onPress={() => setSelectedContact(contact)}
-                  style={[
-                    styles.contactItem,
-                    isSelected && {
-                      backgroundColor: colors.cardLight,
-                      borderColor: colors.primary,
-                    },
-                    { borderColor: colors.cardBorder },
-                  ]}
-                >
-                  <View
-                    style={[
-                      styles.contactAvatar,
-                      { backgroundColor: isSelected ? colors.primary : colors.cardLight },
-                    ]}
-                  >
-                    <Text
-                      style={[
-                        styles.contactInitials,
-                        { color: isSelected ? colors.primaryText : colors.text },
-                      ]}
-                    >
-                      {contact.initials}
-                    </Text>
-                  </View>
-                  <Text style={[styles.contactName, { color: colors.text }]} numberOfLines={1}>
-                    {contact.name}
-                  </Text>
-                  <Text style={[styles.contactMasked, { color: colors.textDim }]}>
-                    {contact.maskedAccount}
-                  </Text>
-                </TouchableOpacity>
-              );
-            })}
+          <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.presetsRow}>
+            {QUICK_PRESETS.map((preset) => (
+              <TouchableOpacity
+                key={preset.id}
+                onPress={() => handleSelectPreset(preset)}
+                style={[
+                  styles.presetCard,
+                  {
+                    backgroundColor: title === preset.title ? colors.cardLight : colors.card,
+                    borderColor: title === preset.title ? colors.primary : colors.cardBorder,
+                  },
+                ]}
+              >
+                <View style={[styles.presetIconCircle, { backgroundColor: colors.cardLight }]}>
+                  <Ionicons name={preset.iconName as any} size={18} color={colors.lime} />
+                </View>
+                <Text style={[styles.presetTitle, { color: colors.text }]} numberOfLines={1}>
+                  {preset.title}
+                </Text>
+                <Text style={[styles.presetAmount, { color: colors.lime }]}>
+                  {formatCurrency(preset.defaultAmount || 0, currency)}
+                </Text>
+              </TouchableOpacity>
+            ))}
           </ScrollView>
         </View>
 
-        {/* Custom In-App Numeric Keypad */}
+        {/* Custom Numeric Keypad (3x4) */}
         <View style={styles.keypadContainer}>
           <View style={styles.keypadRow}>
             {['1', '2', '3'].map((num) => (
@@ -328,20 +326,20 @@ export const SendMoneyScreen: React.FC<SendMoneyScreenProps> = ({
           </View>
         </View>
 
-        {/* Hold / Slide To Send Button */}
+        {/* Hold / Tap To Save Button */}
         <TouchableOpacity
-          onPress={handleConfirmSend}
-          disabled={isSending}
+          onPress={handleConfirmSave}
+          disabled={isSaving}
           activeOpacity={0.85}
           style={[
-            styles.holdToSendBtn,
+            styles.holdToSaveBtn,
             { backgroundColor: colors.lime },
-            isSending && { opacity: 0.7 },
+            isSaving && { opacity: 0.7 },
           ]}
         >
           <View style={[styles.holdDot, { backgroundColor: colors.limeText }]} />
-          <Text style={[styles.holdToSendText, { color: colors.limeText }]}>
-            {isSending ? 'Sending...' : t.holdToSend}
+          <Text style={[styles.holdToSaveText, { color: colors.limeText }]}>
+            {isSaving ? 'Guardando...' : t.holdToSave}
           </Text>
         </TouchableOpacity>
       </ScrollView>
@@ -378,62 +376,61 @@ const styles = StyleSheet.create({
     paddingHorizontal: 20,
     paddingBottom: 40,
   },
-  transferCard: {
+  impactCard: {
     borderRadius: 26,
     padding: 18,
     marginTop: 6,
-    marginBottom: 20,
+    marginBottom: 16,
   },
-  transferCardHeader: {
+  impactCardHeader: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
     marginBottom: 12,
   },
-  transferFromLabel: {
+  impactLabel: {
     fontSize: 13,
-    fontWeight: '700',
+    fontWeight: '800',
+    textTransform: 'uppercase',
   },
-  transferCardBody: {
+  categoryBadge: {
+    paddingHorizontal: 10,
+    paddingVertical: 4,
+    borderRadius: 12,
+  },
+  categoryBadgeText: {
+    fontSize: 11,
+    fontWeight: '800',
+    textTransform: 'uppercase',
+  },
+  impactBody: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
   },
-  accountInfoLeft: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 12,
+  balanceAfterLabel: {
+    fontSize: 11,
+    fontWeight: '700',
   },
-  accountAvatar: {
-    width: 40,
-    height: 40,
-    borderRadius: 20,
-    justifyContent: 'center',
-    alignItems: 'center',
+  projectedBalanceText: {
+    fontSize: 22,
+    fontWeight: '900',
   },
-  accountTitle: {
-    fontSize: 14,
-    fontWeight: '800',
-  },
-  accountMasked: {
-    fontSize: 12,
-    fontWeight: '600',
-  },
-  balancePill: {
+  currentBalancePill: {
     flexDirection: 'row',
     alignItems: 'center',
     paddingHorizontal: 12,
-    paddingVertical: 7,
-    borderRadius: 20,
+    paddingVertical: 6,
+    borderRadius: 16,
   },
-  balancePillText: {
-    fontSize: 14,
+  currentBalancePillText: {
+    fontSize: 13,
     fontWeight: '800',
   },
   amountDisplayContainer: {
     alignItems: 'center',
     justifyContent: 'center',
-    paddingVertical: 14,
+    paddingVertical: 10,
   },
   amountRow: {
     flexDirection: 'row',
@@ -450,9 +447,22 @@ const styles = StyleSheet.create({
     borderRadius: 1.5,
     marginLeft: 4,
   },
+  titleInputContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    borderRadius: 18,
+    borderWidth: 1,
+    paddingHorizontal: 14,
+    height: 50,
+    marginBottom: 14,
+  },
+  titleInput: {
+    flex: 1,
+    fontSize: 14,
+    fontWeight: '700',
+  },
   limitsContainer: {
-    marginTop: 6,
-    marginBottom: 20,
+    marginBottom: 18,
   },
   limitsHeader: {
     flexDirection: 'row',
@@ -461,11 +471,11 @@ const styles = StyleSheet.create({
     marginBottom: 8,
   },
   limitsLabel: {
-    fontSize: 12,
+    fontSize: 11,
     fontWeight: '700',
   },
   limitsMax: {
-    fontSize: 12,
+    fontSize: 11,
     fontWeight: '700',
   },
   sliderTrack: {
@@ -488,70 +498,47 @@ const styles = StyleSheet.create({
     marginLeft: -8,
   },
   quickSendSection: {
-    marginBottom: 20,
-  },
-  quickSendHeader: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    marginBottom: 12,
+    marginBottom: 18,
   },
   quickSendTitle: {
-    fontSize: 15,
+    fontSize: 13,
     fontWeight: '800',
+    marginBottom: 10,
   },
-  viewAllText: {
-    fontSize: 12,
-    fontWeight: '600',
-  },
-  contactsRow: {
+  presetsRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 12,
+    gap: 10,
     paddingVertical: 4,
   },
-  addContactBtn: {
-    width: 64,
-    height: 72,
-    borderRadius: 18,
-    borderWidth: 1.5,
-    borderStyle: 'dashed',
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  contactItem: {
-    width: 72,
+  presetCard: {
+    width: 110,
     borderRadius: 18,
     borderWidth: 1,
-    paddingVertical: 8,
-    paddingHorizontal: 4,
+    padding: 10,
     alignItems: 'center',
-    justifyContent: 'center',
   },
-  contactAvatar: {
-    width: 38,
-    height: 38,
-    borderRadius: 19,
+  presetIconCircle: {
+    width: 34,
+    height: 34,
+    borderRadius: 17,
     justifyContent: 'center',
     alignItems: 'center',
     marginBottom: 6,
   },
-  contactInitials: {
-    fontSize: 13,
-    fontWeight: '800',
-  },
-  contactName: {
-    fontSize: 12,
+  presetTitle: {
+    fontSize: 11,
     fontWeight: '700',
+    textAlign: 'center',
     marginBottom: 2,
   },
-  contactMasked: {
-    fontSize: 10,
-    fontWeight: '600',
+  presetAmount: {
+    fontSize: 12,
+    fontWeight: '800',
   },
   keypadContainer: {
     gap: 10,
-    marginBottom: 20,
+    marginBottom: 18,
   },
   keypadRow: {
     flexDirection: 'row',
@@ -560,7 +547,7 @@ const styles = StyleSheet.create({
   },
   keypadBtn: {
     flex: 1,
-    height: 52,
+    height: 50,
     borderRadius: 16,
     justifyContent: 'center',
     alignItems: 'center',
@@ -569,9 +556,9 @@ const styles = StyleSheet.create({
     fontSize: 22,
     fontWeight: '800',
   },
-  holdToSendBtn: {
-    height: 58,
-    borderRadius: 29,
+  holdToSaveBtn: {
+    height: 56,
+    borderRadius: 28,
     flexDirection: 'row',
     justifyContent: 'center',
     alignItems: 'center',
@@ -586,8 +573,8 @@ const styles = StyleSheet.create({
     height: 8,
     borderRadius: 4,
   },
-  holdToSendText: {
-    fontSize: 16,
+  holdToSaveText: {
+    fontSize: 15,
     fontWeight: '900',
     letterSpacing: -0.2,
   },

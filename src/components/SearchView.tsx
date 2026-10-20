@@ -8,46 +8,52 @@ import {
   StyleSheet,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
-import { ContactItem, Currency, TransactionItem } from '../types/expense';
+import { Currency, ExpenseCategory, ExpenseItem } from '../types/expense';
 import { ThemeColors } from '../utils/theme';
 import { formatCurrency } from '../utils/formatters';
 import { getTranslations } from '../utils/i18n';
 
 interface SearchViewProps {
-  transactions: TransactionItem[];
-  contacts: ContactItem[];
+  expenses: ExpenseItem[];
   currency: Currency;
   colors: ThemeColors;
   locale: any;
-  onSelectContact: (contact: ContactItem) => void;
+  onTogglePaid: (id: string) => void;
 }
 
 export const SearchView: React.FC<SearchViewProps> = ({
-  transactions,
-  contacts,
+  expenses,
   currency,
   colors,
   locale,
-  onSelectContact,
+  onTogglePaid,
 }) => {
   const t = getTranslations(locale);
   const [query, setQuery] = useState('');
 
   const trimmed = query.trim().toLowerCase();
 
-  const filteredTransactions = transactions.filter(
-    (t) =>
-      t.title.toLowerCase().includes(trimmed) ||
-      t.recipientOrSender.toLowerCase().includes(trimmed) ||
-      t.trxId.toLowerCase().includes(trimmed)
+  const filteredExpenses = expenses.filter(
+    (e) =>
+      e.title.toLowerCase().includes(trimmed) ||
+      (e.notes && e.notes.toLowerCase().includes(trimmed)) ||
+      e.category.toLowerCase().includes(trimmed)
   );
 
-  const filteredContacts = contacts.filter(
-    (c) =>
-      c.name.toLowerCase().includes(trimmed) ||
-      c.handle.toLowerCase().includes(trimmed) ||
-      c.maskedAccount.toLowerCase().includes(trimmed)
-  );
+  const getCategoryIcon = (category: ExpenseCategory) => {
+    switch (category) {
+      case 'micro':
+        return 'cafe-outline';
+      case 'subscription':
+        return 'repeat-outline';
+      case 'fixed':
+        return 'home-outline';
+      case 'leisure':
+        return 'beer-outline';
+      default:
+        return 'receipt-outline';
+    }
+  };
 
   return (
     <View style={[styles.screen, { backgroundColor: colors.bg }]}>
@@ -75,81 +81,65 @@ export const SearchView: React.FC<SearchViewProps> = ({
         showsVerticalScrollIndicator={false}
         contentContainerStyle={styles.scrollContainer}
       >
-        {/* Matching Contacts */}
-        {filteredContacts.length > 0 && (
-          <View style={styles.section}>
-            <Text style={[styles.sectionTitle, { color: colors.textDim }]}>
-              {t.favouriteContacts} ({filteredContacts.length})
-            </Text>
-            <View style={styles.contactsGrid}>
-              {filteredContacts.map((contact) => (
-                <TouchableOpacity
-                  key={contact.id}
-                  onPress={() => onSelectContact(contact)}
-                  style={[styles.contactCard, { backgroundColor: colors.card, borderColor: colors.cardBorder }]}
-                >
-                  <View style={[styles.contactAvatar, { backgroundColor: colors.cardLight }]}>
-                    <Text style={[styles.contactInitials, { color: colors.lime }]}>
-                      {contact.initials}
-                    </Text>
-                  </View>
-                  <View>
-                    <Text style={[styles.contactName, { color: colors.text }]}>{contact.name}</Text>
-                    <Text style={[styles.contactHandle, { color: colors.textDim }]}>
-                      {contact.handle} • {contact.maskedAccount}
-                    </Text>
-                  </View>
-                </TouchableOpacity>
-              ))}
-            </View>
-          </View>
-        )}
-
-        {/* Matching Transactions */}
         <View style={styles.section}>
           <Text style={[styles.sectionTitle, { color: colors.textDim }]}>
-            {t.transactions} ({filteredTransactions.length})
+            {t.recentExpenses} ({filteredExpenses.length})
           </Text>
-          {filteredTransactions.length === 0 ? (
+
+          {filteredExpenses.length === 0 ? (
             <View style={[styles.emptyBox, { backgroundColor: colors.card, borderColor: colors.cardBorder }]}>
               <Ionicons name="search-outline" size={32} color={colors.textDim} />
               <Text style={[styles.emptyText, { color: colors.textMuted }]}>
-                No results found matching "{query}"
+                No se encontraron gastos con "{query}"
               </Text>
             </View>
           ) : (
-            filteredTransactions.map((trx) => {
-              const isIncome = trx.type === 'receive' || trx.type === 'deposit';
+            filteredExpenses.map((expense) => {
+              const iconName = getCategoryIcon(expense.category);
               return (
                 <View
-                  key={trx.id}
-                  style={[styles.trxCard, { backgroundColor: colors.card, borderColor: colors.cardBorder }]}
+                  key={expense.id}
+                  style={[styles.itemCard, { backgroundColor: colors.card, borderColor: colors.cardBorder }]}
                 >
-                  <View style={styles.trxLeft}>
-                    <View style={[styles.trxCircle, { backgroundColor: colors.cardLight }]}>
-                      <Ionicons
-                        name={isIncome ? 'arrow-down-outline' : 'arrow-up-outline'}
-                        size={18}
-                        color={isIncome ? colors.lime : colors.danger}
-                        style={{ transform: [{ rotate: '45deg' }] }}
-                      />
+                  <TouchableOpacity
+                    onPress={() => onTogglePaid(expense.id)}
+                    style={styles.itemLeft}
+                    activeOpacity={0.7}
+                  >
+                    <View style={[styles.iconCircle, { backgroundColor: colors.cardLight }]}>
+                      <Ionicons name={iconName as any} size={18} color={colors.lime} />
                     </View>
-                    <View>
-                      <Text style={[styles.trxTitle, { color: colors.text }]}>{trx.title}</Text>
-                      <Text style={[styles.trxSub, { color: colors.textDim }]}>
-                        {trx.date} • {trx.time} • TrxID: {trx.trxId}
+                    <View style={{ flex: 1 }}>
+                      <Text style={[styles.itemTitle, { color: colors.text }]}>{expense.title}</Text>
+                      <Text style={[styles.itemSub, { color: colors.textDim }]}>
+                        {t[expense.category] || expense.category} • {t.dueDay(expense.dueDate)}
                       </Text>
                     </View>
+                  </TouchableOpacity>
+
+                  <View style={styles.itemRight}>
+                    <Text style={[styles.itemAmount, { color: colors.text }]}>
+                      -{formatCurrency(expense.amount, currency)}
+                    </Text>
+                    <TouchableOpacity
+                      onPress={() => onTogglePaid(expense.id)}
+                      style={[
+                        styles.statusPill,
+                        {
+                          backgroundColor: expense.isPaid ? 'rgba(198, 248, 39, 0.15)' : 'rgba(239, 68, 68, 0.15)',
+                        },
+                      ]}
+                    >
+                      <Text
+                        style={[
+                          styles.statusText,
+                          { color: expense.isPaid ? colors.lime : colors.danger },
+                        ]}
+                      >
+                        {expense.isPaid ? t.paid : t.pending}
+                      </Text>
+                    </TouchableOpacity>
                   </View>
-                  <Text
-                    style={[
-                      styles.trxAmount,
-                      { color: isIncome ? colors.lime : colors.danger },
-                    ]}
-                  >
-                    {isIncome ? '+' : '-'}
-                    {formatCurrency(trx.amount, currency)}
-                  </Text>
                 </View>
               );
             })
@@ -196,37 +186,7 @@ const styles = StyleSheet.create({
     letterSpacing: 1,
     marginBottom: 10,
   },
-  contactsGrid: {
-    gap: 8,
-  },
-  contactCard: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    padding: 12,
-    borderRadius: 18,
-    borderWidth: 1,
-    gap: 12,
-  },
-  contactAvatar: {
-    width: 38,
-    height: 38,
-    borderRadius: 19,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  contactInitials: {
-    fontSize: 13,
-    fontWeight: '800',
-  },
-  contactName: {
-    fontSize: 14,
-    fontWeight: '700',
-  },
-  contactHandle: {
-    fontSize: 11,
-    fontWeight: '600',
-  },
-  trxCard: {
+  itemCard: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
@@ -235,29 +195,42 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     marginBottom: 8,
   },
-  trxLeft: {
+  itemLeft: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: 12,
     flex: 1,
   },
-  trxCircle: {
+  iconCircle: {
     width: 38,
     height: 38,
     borderRadius: 19,
     justifyContent: 'center',
     alignItems: 'center',
   },
-  trxTitle: {
+  itemTitle: {
     fontSize: 13,
     fontWeight: '700',
   },
-  trxSub: {
-    fontSize: 10,
+  itemSub: {
+    fontSize: 11,
     fontWeight: '600',
   },
-  trxAmount: {
+  itemRight: {
+    alignItems: 'flex-end',
+    gap: 4,
+  },
+  itemAmount: {
     fontSize: 14,
+    fontWeight: '800',
+  },
+  statusPill: {
+    paddingHorizontal: 8,
+    paddingVertical: 3,
+    borderRadius: 8,
+  },
+  statusText: {
+    fontSize: 10,
     fontWeight: '800',
   },
   emptyBox: {

@@ -1,6 +1,6 @@
-# ⚡ PocketWallet — Cyber-Lime Mobile Fintech & Digital Banking
+# ⚡ PocketExpenses — Cyber-Lime Expenses, Subscriptions & Micro-spending Tracker
 
-A premier, high-fidelity mobile digital banking and smart expense management application built with **React Native**, **Expo (TypeScript)**, and **NativeWind (Tailwind CSS)**. Designed with a cutting-edge **Cyber Lime & Deep Charcoal** aesthetic, providing seamless navigation across payments, transfers, multi-currency accounts, and virtual payment cards.
+A high-performance personal expense and recurring commitments manager built with **React Native**, **Expo (TypeScript)**, and **NativeWind (Tailwind CSS)**. Designed with a striking **Cyber Lime & Deep Charcoal** aesthetic, engineered specifically for tracking **daily expenses**, **monthly subscriptions**, **fixed utility bills**, and **micro-expenses** (coffee, snacks, transport) with instant numerical keypad entry and disposable balance calculations.
 
 <p align="left">
   <a href="https://expo.dev/artifacts/eas/4KlACYkfHxU14bITNmFSRYdkuBrz3MH7FVkXu-XggWs.apk"><img src="https://img.shields.io/badge/Download%20APK-Android%20Direct-C6F827?style=for-the-badge&logo=android&logoColor=black" alt="Download APK" /></a>
@@ -15,61 +15,60 @@ A premier, high-fidelity mobile digital banking and smart expense management app
 
 ---
 
-## 🎨 Visual Identity & Architecture
+## 🎯 Purpose & Core Capabilities
 
-PocketWallet faithfully matches a sleek, modern neo-fintech visual language:
-- **Flagship Palette:** Vibrant Cyber Lime (`#C6F827`), Deep Charcoal Slate (`#0B0F07`), with crisp high-contrast cards and border glows.
-- **Dynamic Ledger (Zero Sample Numbers):** All balances, transfer limits, and card states are calculated dynamically from real, live operations. When you send money, top up, or adjust limits, calculations are executed and persisted immediately to `AsyncStorage`.
-- **Cross-Project Preferences Block:** A unified settings panel imported from the enterprise ecosystem allowing immediate real-time switching of **Display Mode**, **Accent Colors**, **Languages**, and **Currencies**.
+- **Disposable Balance ("Safe to Spend"):** Real-time gauge calculating `Monthly Net Income - Committed Expenses` to show exactly how much uncommitted cash you have left.
+- **Subscriptions & Recurring Bills:** Dedicated tracker for streaming services (Netflix, Spotify), memberships (Gym, Cloud Storage), and fixed household bills (rent, electricity, fiber internet) with day-of-month due dates and one-tap payment toggles.
+- **Micro-spending Fast Track:** Ultrafast logging for small impulse and daily transactions (specialty coffee, snacks, kiosco, short cab rides) using a custom on-screen 3x4 numeric keypad.
+- **Zero Dummy Numbers:** All ledger records, percentages, and balances are computed mathematically from stored data in `AsyncStorage`.
 
 ---
 
-## 📱 Core Screens & Experience
+## 🎨 Visual Identity & Screen Architecture
+
+PocketExpenses pairs high-contrast neo-fintech aesthetics with disciplined budget tracking:
 
 ### 1. 🏠 Home / Dashboard
-- **Profile Header:** Avatar with live handle (`@janvisd`), VIP Rewards trophy badge, and notification bell indicator.
-- **Hero Balance Card (Neon Lime):** Features total account balance, weekly trend badge (`↑ 24% Last week`), curved pull tab, and 4 circular action triggers:
-  - ↗️ **Send:** Opens the dedicated Send Money screen.
-  - ↙️ **Request:** Prompts for receiving money or displaying the personal QR code.
-  - 💳 **Payment:** Instant QR/Contactless payment scanner.
-  - 📥 **Withdraw:** Quick cash-out to linked checking accounts.
-- **Favourite Contacts:** Horizontal scroll of quick-send contacts (`+` Add Contact, Alina, Mark, Rachel, etc.).
-- **Live Transaction Ledger:** Categorized transactional stream with timestamps, TrxIDs, and dynamic inflow/outflow color cues.
+- **Profile & Quick Settings:** User header with live savings streak indicator, alerts bell, and interface preferences trigger.
+- **Hero Disposable Balance Card (Cyber Lime `#C6F827`):**
+  - Large display of current disposable balance.
+  - Health indicator pill (`Safe to Spend %` / `EQUILIBRADO`).
+  - Monthly net income vs. committed expenses breakdown.
+  - 4 Integrated Action Triggers:
+    - ➕ **+ Gasto:** Fast keypad expense logger.
+    - 🔁 **Subs:** View and manage subscriptions.
+    - 🏠 **Fijos:** Filter fixed household bills.
+    - 💼 **Ingreso:** Edit monthly income and savings target.
+- **Upcoming Subscriptions Carousel:** Horizontal cards displaying imminent bills (due day, amount, and instant paid/pending checkmark).
+- **Recent Expenses & Micro-spending Stream:** Live feed categorized into Microgastos, Subscriptions, Fixed Bills, and Leisure with status toggles.
 
-### 2. 💸 Send Money Screen
-- **Interactive Source Card:** "Transfer from" neon card detailing masked account (`••••••5890`) and available balance.
-- **Large Typographic Input:** Centered dynamic amount entry with active glowing caret.
-- **Transfer Limits Track:** Visual slider gauge reflecting percentage utilization against the configurable transfer ceiling.
-- **Quick-Send Pickers:** One-tap contact selection that automatically assigns recipients.
-- **Custom Numeric Keypad:** Dedicated in-app 3x4 grid (`1-9`, `0`, `↵ Enter`, `⌫ Backspace`) with instant digit shifting.
-- **Hold To Send:** High-contrast lime button that validates balance and completes transactions safely.
+### 2. ⚡ Quick Expense Entry Screen
+- **Budget Impact Card:** Real-time preview of your disposable balance before and projected balance *after* the expense.
+- **Centered Typographic Input:** Big digit display with glowing lime cursor.
+- **Budget Utilization Slider:** Dynamic gauge showing what percentage of your monthly income this expense represents.
+- **Quick-Pick Presets:** One-tap chips for frequent micro-expenses (☕ Coffee, 🚕 Taxi, 🍿 Snacks, 🍔 Lunch, 🛒 Groceries).
+- **Built-in 3x4 Numeric Keypad:** Fast physical-style entry (`1-9`, `0`, `↵ Enter`, `⌫ Backspace`).
+- **Hold To Save:** Tactile confirmation button that validates and saves expenses.
 
-### 3. 💳 Cards Management
-- **Virtual Credit/Debit Card:** Horizontal high-res card in cyber-lime gradient with VISA branding, cardholder name, expiry date (`12/30`), and formatted card number (`7820 5500 0835 3501`).
-- **Freeze / Unfreeze Toggle:** Instant one-tap card lock for enhanced security.
-- **2x4 Quick Actions Grid:**
-  1. `Send Money` (Direct transfer)
-  2. `Topup` (Deposit balance)
-  3. `Statements` (Export PDF/ledger)
-  4. `Bills Pay` (Utilities and recurring services)
-  5. `Loans` (Pre-approved credit line)
-  6. `Freeze Cards` (Pause activity)
-  7. `Limit Request` (Adjust daily ceilings)
-  8. `Deposits` (High-yield savings vault)
-- **`+ Add Cards` Action:** Dynamically generate and link new physical or virtual cards.
+### 3. 🔁 Subscriptions & Fixed Commitments
+- **Recurring Commitments Card:** Cyber-lime physical card summary showing total monthly recurring outflow and pending count.
+- **2x4 Quick Action Grid:**
+  - `+ Gasto` • `+ Sub` • `Pagar Todo` • `Ingreso`
+- **Active Services Ledger:** List of all recurring contracts with monthly cost, day of month, and one-tap payment toggle.
+- **`+ Agregar Suscripción`:** Add custom streaming services or bills.
 
 ### 4. 🧭 Floating Bottom Navigation Dock
-- **Curved Elevated Dock:** Home, Cards, Transaction History, and Search.
-- **Center Floating Action Button (FAB):** Glowing circular neon scanner button for QR codes and peer payments.
+- **Elevated Curved Dock:** Overview, Subscriptions, History, and Search.
+- **Center Floating Action Button (+):** Glowing neon lime button launching the rapid micro-expense keypad anytime.
 
 ---
 
 ## ⚙️ The Preferences Block (Cross-Project Component)
 
-Imported and adapted directly from our multi-project suite (`erp`, `saas`, `sap`, `contact-page`), the **PreferencesModal** provides complete personalization:
+Imported and unified with the enterprise suite (`erp`, `saas`, `sap`, `contact-page`):
 
 1. **Display Mode:** `Light` vs `Dark` mode.
-2. **7 Accent Color Swatches:**
+2. **7 Accent Palettes:**
    - 🟩 `Cyber Lime` (Flagship `#C6F827`)
    - 🟢 `Emerald` (`#10B981`)
    - 🔵 `Electric Indigo` (`#6366F1`)
@@ -78,27 +77,20 @@ Imported and adapted directly from our multi-project suite (`erp`, `saas`, `sap`
    - 🟦 `Cyber Cyan` (`#06B6D4`)
    - 🟣 `Clay Violet` (`#8B5CF6`)
 3. **4 Languages:**
-   - 🇪🇸 Español
-   - 🇺🇸 English
-   - 🇧🇷 Português
-   - 🇨🇳 中文
+   - 🇪🇸 Español • 🇺🇸 English • 🇧🇷 Português • 🇨🇳 中文
 4. **5 Global Currencies:**
-   - 🇺🇸 `USD` ($)
-   - 🇦🇷 `ARS` ($)
-   - 🇪🇺 `EUR` (€)
-   - 🇨🇳 `CNY` (¥)
-   - 🇧🇷 `BRL` (R$)
+   - 🇺🇸 `USD` ($) • 🇦🇷 `ARS` ($) • 🇪🇺 `EUR` (€) • 🇨🇳 `CNY` (¥) • 🇧🇷 `BRL` (R$)
 
 ---
 
 ## ⚖️ Legal & Regulatory Compliance
 
-PocketWallet complies with global mobile application data privacy standards:
-- [Terms of Service (TERMS_OF_SERVICE.md)](./TERMS_OF_SERVICE.md) — Comprehensive user agreements and usage terms.
-- [Privacy Policy (PRIVACY_POLICY.md)](./PRIVACY_POLICY.md) — GDPR & CCPA offline-first compliance and data minimization.
-- [Cookie & Storage Policy (COOKIES.md)](./COOKIES.md) — Transparent documentation of sandboxed `AsyncStorage` caching.
-- [Legal Notice (LEGAL.md)](./LEGAL.md) — Regulatory status and banking disclaimer.
-- **In-App Legal Viewer:** Directly accessible from `Preferences` -> `Legal & Privacy`.
+PocketExpenses adheres to global consumer privacy and data sovereignty standards:
+- [Terms of Service (TERMS_OF_SERVICE.md)](./TERMS_OF_SERVICE.md)
+- [Privacy Policy (PRIVACY_POLICY.md)](./PRIVACY_POLICY.md)
+- [Cookie & Storage Policy (COOKIES.md)](./COOKIES.md)
+- [Legal Notice (LEGAL.md)](./LEGAL.md)
+- **In-App Legal Viewer:** Accessible directly in `Preferences` -> `Legal & Privacy`.
 
 ---
 
@@ -106,19 +98,14 @@ PocketWallet complies with global mobile application data privacy standards:
 
 - **Core Runtime:** React Native 0.88, React 19.3, Expo SDK 58 (TypeScript strict mode)
 - **Styling:** NativeWind v4 (Tailwind CSS native compilation)
-- **State & Storage:** React Hooks + `@react-native-async-storage/async-storage` (offline-first)
-- **Vector Icons:** `@expo/vector-icons` (Ionicons)
-- **Engineering Standards:** Clean modular architecture, minimal dependency footprint, offline-first data sovereignty, and high-fidelity native design system.
+- **Storage:** Offline-first `@react-native-async-storage/async-storage`
+- **Icons:** `@expo/vector-icons` (Ionicons)
+- **OTA Updates:** EAS Update (`production` channel)
 
 ---
 
 ## 🚀 Quickstart & Development
 
-### Prerequisites
-- Node.js >= 22.0.0
-- npm or bun
-
-### Installation
 ```bash
 # Clone the repository
 git clone https://github.com/AgustinMilesi/expenses.git
@@ -129,10 +116,7 @@ npm install
 
 # Start development server
 npm run start
-```
 
-### Typecheck & Quality Assurance
-```bash
 # Run TypeScript compilation check
 npm run typecheck
 ```

@@ -1,4 +1,4 @@
-import { Currency, ExpenseCategory, ExpenseItem, TransactionItem } from '../types/expense';
+import { Currency, ExpenseCategory, ExpenseItem, MonthlyBudget } from '../types/expense';
 
 export const CURRENCY_INFO: Record<Currency, { symbol: string; label: string; flag: string }> = {
   ARS: { symbol: '$', label: 'ARS (Pesos Argentinos)', flag: '🇦🇷' },
@@ -38,27 +38,6 @@ export function formatCardNumber(num: string): string {
   return chunks ? chunks.join(' ') : num;
 }
 
-export function generateTrxId(): string {
-  const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
-  let res = 'CJ';
-  for (let i = 0; i < 8; i++) {
-    res += chars.charAt(Math.floor(Math.random() * chars.length));
-  }
-  return res;
-}
-
-export function getCurrentTimeFormatted(): string {
-  const now = new Date();
-  let hours = now.getHours();
-  const minutes = now.getMinutes();
-  const ampm = hours >= 12 ? 'PM' : 'AM';
-  hours = hours % 12;
-  hours = hours ? hours : 12;
-  const strMinutes = minutes < 10 ? '0' + minutes : minutes;
-  const strHours = hours < 10 ? '0' + hours : hours;
-  return `${strHours}:${strMinutes} ${ampm}`;
-}
-
 export interface ExpenseTotals {
   total: number;
   totalPaid: number;
@@ -66,61 +45,52 @@ export interface ExpenseTotals {
   fixedTotal: number;
   subTotal: number;
   leisureTotal: number;
+  microTotal: number;
   count: number;
   paidCount: number;
   pendingCount: number;
+  remainingBalance: number;
+  percentageUsed: number;
 }
 
-export function calculateTotals(items: ExpenseItem[]): ExpenseTotals {
-  return items.reduce(
-    (acc, item) => {
-      acc.total += item.amount;
-      acc.count += 1;
+export function calculateTotals(items: ExpenseItem[], monthlyIncome: number = 0): ExpenseTotals {
+  const initial = {
+    total: 0,
+    totalPaid: 0,
+    totalPending: 0,
+    fixedTotal: 0,
+    subTotal: 0,
+    leisureTotal: 0,
+    microTotal: 0,
+    count: 0,
+    paidCount: 0,
+    pendingCount: 0,
+    remainingBalance: monthlyIncome,
+    percentageUsed: 0,
+  };
 
-      if (item.isPaid) {
-        acc.totalPaid += item.amount;
-        acc.paidCount += 1;
-      } else {
-        acc.totalPending += item.amount;
-        acc.pendingCount += 1;
-      }
+  const calculated = items.reduce((acc, item) => {
+    acc.total += item.amount;
+    acc.count += 1;
 
-      if (item.category === 'fixed') acc.fixedTotal += item.amount;
-      if (item.category === 'subscription') acc.subTotal += item.amount;
-      if (item.category === 'leisure') acc.leisureTotal += item.amount;
-
-      return acc;
-    },
-    {
-      total: 0,
-      totalPaid: 0,
-      totalPending: 0,
-      fixedTotal: 0,
-      subTotal: 0,
-      leisureTotal: 0,
-      count: 0,
-      paidCount: 0,
-      pendingCount: 0,
+    if (item.isPaid) {
+      acc.totalPaid += item.amount;
+      acc.paidCount += 1;
+    } else {
+      acc.totalPending += item.amount;
+      acc.pendingCount += 1;
     }
-  );
-}
 
-export function calculateTransactionTotals(items: TransactionItem[]): {
-  totalInflow: number;
-  totalOutflow: number;
-  netChange: number;
-} {
-  return items.reduce(
-    (acc, item) => {
-      if (item.type === 'receive' || item.type === 'deposit') {
-        acc.totalInflow += item.amount;
-        acc.netChange += item.amount;
-      } else {
-        acc.totalOutflow += item.amount;
-        acc.netChange -= item.amount;
-      }
-      return acc;
-    },
-    { totalInflow: 0, totalOutflow: 0, netChange: 0 }
-  );
+    if (item.category === 'fixed') acc.fixedTotal += item.amount;
+    if (item.category === 'subscription') acc.subTotal += item.amount;
+    if (item.category === 'leisure') acc.leisureTotal += item.amount;
+    if (item.category === 'micro') acc.microTotal += item.amount;
+
+    return acc;
+  }, initial);
+
+  calculated.remainingBalance = Math.max(0, monthlyIncome - calculated.total);
+  calculated.percentageUsed = monthlyIncome > 0 ? Math.min(100, Math.round((calculated.total / monthlyIncome) * 100)) : 0;
+
+  return calculated;
 }
