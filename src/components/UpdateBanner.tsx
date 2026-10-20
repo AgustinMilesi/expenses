@@ -2,22 +2,29 @@ import React, { useEffect, useState } from 'react';
 import { View, Text, TouchableOpacity, ActivityIndicator } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import * as Updates from 'expo-updates';
+import { AppLocale } from '../types/expense';
+import { ThemeColors } from '../utils/theme';
 
-export const UpdateBanner: React.FC = () => {
+interface UpdateBannerProps {
+  colors: ThemeColors;
+  locale: AppLocale;
+}
+
+export const UpdateBanner: React.FC<UpdateBannerProps> = ({ colors, locale }) => {
   const [updateAvailable, setUpdateAvailable] = useState(false);
   const [isUpdating, setIsUpdating] = useState(false);
 
   useEffect(() => {
     async function checkForUpdates() {
       try {
-        if (__DEV__) return; // Updates are disabled in local development mode
+        if (__DEV__) return;
         const update = await Updates.checkForUpdateAsync();
         if (update.isAvailable) {
           await Updates.fetchUpdateAsync();
           setUpdateAvailable(true);
         }
       } catch (error) {
-        console.log('Update check error (safe to ignore in dev):', error);
+        console.log('Update check (safe to ignore in dev):', error);
       }
     }
 
@@ -39,17 +46,39 @@ export const UpdateBanner: React.FC = () => {
   }
 
   return (
-    <View className="mx-5 mb-3 p-3.5 rounded-2xl bg-gradient-to-r from-emerald-500/20 to-teal-500/10 border border-emerald-500/40 shadow-lg shadow-emerald-950/20 flex-row items-center justify-between">
-      <View className="flex-row items-center gap-2.5 flex-1 pr-2">
-        <View className="w-8 h-8 rounded-full bg-emerald-500/20 items-center justify-center">
-          <Ionicons name="sparkles" size={16} color="#10B981" />
+    <View
+      style={{
+        marginHorizontal: 20,
+        marginBottom: 12,
+        padding: 14,
+        borderRadius: 16,
+        backgroundColor: 'rgba(16, 185, 129, 0.15)',
+        borderWidth: 1,
+        borderColor: colors.success,
+        flexDirection: 'row',
+        alignItems: 'center',
+        justifyContent: 'space-between',
+      }}
+    >
+      <View style={{ flexDirection: 'row', alignItems: 'center', gap: 10, flex: 1, paddingRight: 8 }}>
+        <View
+          style={{
+            width: 32,
+            height: 32,
+            borderRadius: 16,
+            backgroundColor: 'rgba(16, 185, 129, 0.25)',
+            alignItems: 'center',
+            justifyContent: 'center',
+          }}
+        >
+          <Ionicons name="sparkles" size={16} color={colors.success} />
         </View>
-        <View className="flex-1">
-          <Text className="text-xs font-bold text-white tracking-tight">
-            Nueva actualización disponible
+        <View style={{ flex: 1 }}>
+          <Text style={{ fontSize: 13, fontWeight: '800', color: colors.text }}>
+            {locale === 'es' ? 'Nueva actualización disponible' : 'New update available'}
           </Text>
-          <Text className="text-[11px] text-emerald-300">
-            Se sincronizó una nueva versión desde GitHub.
+          <Text style={{ fontSize: 11, color: colors.textMuted, marginTop: 1 }}>
+            {locale === 'es' ? 'Se descargó una versión corregida.' : 'A new version has been downloaded.'}
           </Text>
         </View>
       </View>
@@ -57,15 +86,24 @@ export const UpdateBanner: React.FC = () => {
       <TouchableOpacity
         onPress={handleApplyUpdate}
         disabled={isUpdating}
-        className="px-3 py-2 rounded-xl bg-emerald-500 flex-row items-center gap-1 active:opacity-90 shadow-sm shadow-emerald-500/40"
+        activeOpacity={0.8}
+        style={{
+          paddingHorizontal: 12,
+          paddingVertical: 8,
+          borderRadius: 10,
+          backgroundColor: colors.success,
+          flexDirection: 'row',
+          alignItems: 'center',
+          gap: 6,
+        }}
       >
         {isUpdating ? (
-          <ActivityIndicator size="small" color="#090D16" />
+          <ActivityIndicator size="small" color="#FFFFFF" />
         ) : (
           <>
-            <Ionicons name="refresh" size={14} color="#090D16" />
-            <Text className="text-xs font-black text-slate-950 uppercase tracking-wider">
-              Reiniciar
+            <Ionicons name="refresh" size={14} color="#FFFFFF" />
+            <Text style={{ fontSize: 12, fontWeight: '900', color: '#FFFFFF', textTransform: 'uppercase' }}>
+              {locale === 'es' ? 'Reiniciar' : 'Reload'}
             </Text>
           </>
         )}

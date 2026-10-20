@@ -10,32 +10,28 @@ import {
   Platform,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
-import { Currency, ExpenseCategory, ExpenseItem } from '../types/expense';
+import { AppLocale, Currency, ExpenseCategory, ExpenseItem } from '../types/expense';
+import { ThemeColors } from '../utils/theme';
+import { getTranslations } from '../utils/i18n';
 
 interface AddExpenseModalProps {
   visible: boolean;
   currency: Currency;
+  locale: AppLocale;
+  colors: ThemeColors;
   onClose: () => void;
   onSave: (expense: Omit<ExpenseItem, 'id' | 'createdAt'>) => void;
 }
 
-const CATEGORY_OPTIONS: Array<{
-  id: ExpenseCategory;
-  label: string;
-  icon: keyof typeof Ionicons.glyphMap;
-  color: string;
-}> = [
-  { id: 'fixed', label: 'Fixed Bill', icon: 'flash-outline', color: '#3B82F6' },
-  { id: 'subscription', label: 'Subscription', icon: 'repeat-outline', color: '#8B5CF6' },
-  { id: 'leisure', label: 'Leisure / Outing', icon: 'restaurant-outline', color: '#F43F5E' },
-];
-
 export const AddExpenseModal: React.FC<AddExpenseModalProps> = ({
   visible,
   currency,
+  locale,
+  colors,
   onClose,
   onSave,
 }) => {
+  const t = getTranslations(locale);
   const [title, setTitle] = useState('');
   const [amount, setAmount] = useState('');
   const [category, setCategory] = useState<ExpenseCategory>('fixed');
@@ -44,20 +40,45 @@ export const AddExpenseModal: React.FC<AddExpenseModalProps> = ({
   const [isPaid, setIsPaid] = useState(false);
   const [error, setError] = useState('');
 
+  const categories: Array<{
+    id: ExpenseCategory;
+    label: string;
+    icon: keyof typeof Ionicons.glyphMap;
+    color: string;
+  }> = [
+    {
+      id: 'fixed',
+      label: locale === 'es' ? 'Fijo (Luz, Alquiler)' : 'Fixed Bill',
+      icon: 'flash-outline',
+      color: colors.primary,
+    },
+    {
+      id: 'subscription',
+      label: locale === 'es' ? 'Suscripción' : 'Subscription',
+      icon: 'repeat-outline',
+      color: colors.purple,
+    },
+    {
+      id: 'leisure',
+      label: locale === 'es' ? 'Salida / Ocio' : 'Leisure / Outing',
+      icon: 'restaurant-outline',
+      color: colors.success,
+    },
+  ];
+
   const handleSave = () => {
     if (!title.trim()) {
-      setError('Please enter a title (e.g. Electricity, Netflix, Dinner)');
+      setError(locale === 'es' ? 'Ingresá un concepto (ej. Alquiler, Luz, Gym)' : 'Please enter a title');
       return;
     }
     const parsedAmount = parseFloat(amount);
     if (isNaN(parsedAmount) || parsedAmount <= 0) {
-      setError('Please enter a valid amount');
+      setError(locale === 'es' ? 'Ingresá un monto válido' : 'Please enter a valid amount');
       return;
     }
     const parsedDay = parseInt(dueDate, 10) || 1;
     const clampedDay = Math.min(Math.max(parsedDay, 1), 31);
-
-    const activeCat = CATEGORY_OPTIONS.find((c) => c.id === category);
+    const activeCat = categories.find((c) => c.id === category);
 
     onSave({
       title: title.trim(),
@@ -67,10 +88,9 @@ export const AddExpenseModal: React.FC<AddExpenseModalProps> = ({
       notes: notes.trim(),
       isPaid,
       iconName: activeCat ? activeCat.icon : 'cash-outline',
-      color: activeCat ? activeCat.color : '#6366F1',
+      color: activeCat ? activeCat.color : colors.primary,
     });
 
-    // Reset form
     setTitle('');
     setAmount('');
     setCategory('fixed');
@@ -85,54 +105,110 @@ export const AddExpenseModal: React.FC<AddExpenseModalProps> = ({
     <Modal visible={visible} animationType="slide" transparent={true} onRequestClose={onClose}>
       <KeyboardAvoidingView
         behavior={Platform.OS === 'ios' ? 'padding' : undefined}
-        className="flex-1 justify-end bg-black/70"
+        style={{ flex: 1, justifyContent: 'flex-end', backgroundColor: 'rgba(0, 0, 0, 0.7)' }}
       >
-        <View className="bg-card border-t border-white/10 rounded-t-3xl p-6 max-h-[85%]">
+        <View
+          style={{
+            backgroundColor: colors.card,
+            borderTopLeftRadius: 28,
+            borderTopRightRadius: 28,
+            borderTopWidth: 1,
+            borderTopColor: colors.cardBorder,
+            padding: 22,
+            maxHeight: '85%',
+          }}
+        >
           {/* Header */}
-          <View className="flex-row items-center justify-between pb-4 border-b border-white/10">
-            <Text className="text-lg font-black text-white">Add New Expense</Text>
+          <View
+            style={{
+              flexDirection: 'row',
+              alignItems: 'center',
+              justifyContent: 'space-between',
+              paddingBottom: 14,
+              borderBottomWidth: 1,
+              borderBottomColor: colors.borderSubtle,
+            }}
+          >
+            <Text style={{ fontSize: 18, fontWeight: '900', color: colors.text }}>
+              {t.newExpense}
+            </Text>
             <TouchableOpacity
               onPress={onClose}
-              className="w-8 h-8 rounded-full bg-white/5 items-center justify-center"
+              style={{
+                width: 32,
+                height: 32,
+                borderRadius: 16,
+                backgroundColor: colors.cardLight,
+                alignItems: 'center',
+                justifyContent: 'center',
+              }}
             >
-              <Ionicons name="close" size={18} color="#94A3B8" />
+              <Ionicons name="close" size={18} color={colors.textMuted} />
             </TouchableOpacity>
           </View>
 
-          <ScrollView showsVerticalScrollIndicator={false} className="my-4">
+          <ScrollView showsVerticalScrollIndicator={false} style={{ marginVertical: 14 }}>
             {error ? (
-              <View className="p-3 mb-3 rounded-xl bg-rose-500/10 border border-rose-500/20">
-                <Text className="text-xs text-rose-400 font-bold">{error}</Text>
+              <View
+                style={{
+                  padding: 10,
+                  marginBottom: 12,
+                  borderRadius: 12,
+                  backgroundColor: 'rgba(239, 68, 68, 0.15)',
+                  borderWidth: 1,
+                  borderColor: 'rgba(239, 68, 68, 0.3)',
+                }}
+              >
+                <Text style={{ fontSize: 12, color: colors.danger, fontWeight: '700' }}>
+                  {error}
+                </Text>
               </View>
             ) : null}
 
             {/* Category Selector */}
-            <Text className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-2">
-              Category
+            <Text
+              style={{
+                fontSize: 11,
+                fontWeight: '700',
+                color: colors.textMuted,
+                textTransform: 'uppercase',
+                letterSpacing: 0.8,
+                marginBottom: 8,
+              }}
+            >
+              {t.categoryLabel}
             </Text>
-            <View className="flex-row gap-2 mb-4">
-              {CATEGORY_OPTIONS.map((opt) => {
+            <View style={{ flexDirection: 'row', gap: 8, marginBottom: 14 }}>
+              {categories.map((opt) => {
                 const isSelected = category === opt.id;
                 return (
                   <TouchableOpacity
                     key={opt.id}
                     onPress={() => setCategory(opt.id)}
-                    className={`flex-1 p-2.5 rounded-xl border items-center gap-1.5 ${
-                      isSelected
-                        ? 'bg-primary/20 border-primary'
-                        : 'bg-white/5 border-white/10'
-                    }`}
+                    activeOpacity={0.8}
+                    style={{
+                      flex: 1,
+                      padding: 10,
+                      borderRadius: 12,
+                      alignItems: 'center',
+                      gap: 4,
+                      backgroundColor: isSelected ? colors.primary : colors.cardLight,
+                      borderWidth: 1,
+                      borderColor: isSelected ? colors.primary : colors.cardBorder,
+                    }}
                   >
                     <Ionicons
                       name={opt.icon}
                       size={18}
-                      color={isSelected ? '#818CF8' : '#94A3B8'}
+                      color={isSelected ? '#FFFFFF' : colors.textMuted}
                     />
                     <Text
                       numberOfLines={1}
-                      className={`text-[11px] font-bold ${
-                        isSelected ? 'text-white' : 'text-slate-400'
-                      }`}
+                      style={{
+                        fontSize: 10,
+                        fontWeight: '800',
+                        color: isSelected ? '#FFFFFF' : colors.text,
+                      }}
                     >
                       {opt.label}
                     </Text>
@@ -142,83 +218,175 @@ export const AddExpenseModal: React.FC<AddExpenseModalProps> = ({
             </View>
 
             {/* Title Input */}
-            <Text className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-1.5">
-              Expense Name
+            <Text
+              style={{
+                fontSize: 11,
+                fontWeight: '700',
+                color: colors.textMuted,
+                textTransform: 'uppercase',
+                letterSpacing: 0.8,
+                marginBottom: 6,
+              }}
+            >
+              {t.titleLabel}
             </Text>
             <TextInput
               value={title}
-              onChangeText={(t) => {
-                setTitle(t);
+              onChangeText={(txt) => {
+                setTitle(txt);
                 setError('');
               }}
-              placeholder="e.g. Electric Bill, Gym Pass, Sushi Bar"
-              placeholderTextColor="#64748B"
-              className="p-3.5 rounded-xl bg-white/5 border border-white/10 text-white font-medium text-sm mb-4"
+              placeholder={locale === 'es' ? 'ej. Alquiler, Luz, Internet, Spotify' : 'e.g. Electric bill, Netflix, Dinner'}
+              placeholderTextColor={colors.textDim}
+              style={{
+                padding: 12,
+                borderRadius: 12,
+                backgroundColor: colors.inputBg,
+                borderWidth: 1,
+                borderColor: colors.inputBorder,
+                color: colors.text,
+                fontSize: 14,
+                fontWeight: '600',
+                marginBottom: 14,
+              }}
             />
 
-            {/* Amount & Due Day in Row */}
-            <View className="flex-row gap-3 mb-4">
-              {/* Amount */}
-              <View className="flex-1">
-                <Text className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-1.5">
-                  Amount ({currency})
+            {/* Amount & Due Date */}
+            <View style={{ flexDirection: 'row', gap: 10, marginBottom: 14 }}>
+              <View style={{ flex: 1 }}>
+                <Text
+                  style={{
+                    fontSize: 11,
+                    fontWeight: '700',
+                    color: colors.textMuted,
+                    textTransform: 'uppercase',
+                    letterSpacing: 0.8,
+                    marginBottom: 6,
+                  }}
+                >
+                  {t.amountLabel} ({currency})
                 </Text>
                 <TextInput
                   value={amount}
-                  onChangeText={(a) => {
-                    setAmount(a);
+                  onChangeText={(amt) => {
+                    setAmount(amt);
                     setError('');
                   }}
                   keyboardType="numeric"
                   placeholder="0.00"
-                  placeholderTextColor="#64748B"
-                  className="p-3.5 rounded-xl bg-white/5 border border-white/10 text-white font-bold text-sm"
+                  placeholderTextColor={colors.textDim}
+                  style={{
+                    padding: 12,
+                    borderRadius: 12,
+                    backgroundColor: colors.inputBg,
+                    borderWidth: 1,
+                    borderColor: colors.inputBorder,
+                    color: colors.text,
+                    fontSize: 15,
+                    fontWeight: '800',
+                  }}
                 />
               </View>
 
-              {/* Due Date (Day of Month) */}
-              <View className="w-28">
-                <Text className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-1.5">
-                  Due Day (1-31)
+              <View style={{ width: 110 }}>
+                <Text
+                  style={{
+                    fontSize: 11,
+                    fontWeight: '700',
+                    color: colors.textMuted,
+                    textTransform: 'uppercase',
+                    letterSpacing: 0.8,
+                    marginBottom: 6,
+                  }}
+                >
+                  {locale === 'es' ? 'Día (1-31)' : 'Due Day'}
                 </Text>
                 <TextInput
                   value={dueDate}
                   onChangeText={setDueDate}
                   keyboardType="numeric"
-                  placeholder="15"
-                  placeholderTextColor="#64748B"
-                  className="p-3.5 rounded-xl bg-white/5 border border-white/10 text-white font-bold text-sm text-center"
+                  placeholder="10"
+                  placeholderTextColor={colors.textDim}
+                  style={{
+                    padding: 12,
+                    borderRadius: 12,
+                    backgroundColor: colors.inputBg,
+                    borderWidth: 1,
+                    borderColor: colors.inputBorder,
+                    color: colors.text,
+                    fontSize: 15,
+                    fontWeight: '800',
+                    textAlign: 'center',
+                  }}
                 />
               </View>
             </View>
 
-            {/* Optional Notes */}
-            <Text className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-1.5">
-              Notes (Optional)
+            {/* Notes */}
+            <Text
+              style={{
+                fontSize: 11,
+                fontWeight: '700',
+                color: colors.textMuted,
+                textTransform: 'uppercase',
+                letterSpacing: 0.8,
+                marginBottom: 6,
+              }}
+            >
+              {locale === 'es' ? 'Notas (Opcional)' : 'Notes (Optional)'}
             </Text>
             <TextInput
               value={notes}
               onChangeText={setNotes}
-              placeholder="e.g. Auto-debit from card, split with roommate"
-              placeholderTextColor="#64748B"
-              className="p-3.5 rounded-xl bg-white/5 border border-white/10 text-white font-medium text-sm mb-4"
+              placeholder={locale === 'es' ? 'ej. Débito automático en cuenta' : 'e.g. Card payment, split with friends'}
+              placeholderTextColor={colors.textDim}
+              style={{
+                padding: 12,
+                borderRadius: 12,
+                backgroundColor: colors.inputBg,
+                borderWidth: 1,
+                borderColor: colors.inputBorder,
+                color: colors.text,
+                fontSize: 13,
+                marginBottom: 14,
+              }}
             />
 
-            {/* Initial Paid Status */}
+            {/* Paid status toggle */}
             <TouchableOpacity
               onPress={() => setIsPaid(!isPaid)}
-              className="flex-row items-center justify-between p-3.5 rounded-xl bg-white/5 border border-white/10 mb-4"
+              activeOpacity={0.8}
+              style={{
+                flexDirection: 'row',
+                alignItems: 'center',
+                justifyContent: 'space-between',
+                padding: 12,
+                borderRadius: 12,
+                backgroundColor: colors.cardLight,
+                borderWidth: 1,
+                borderColor: colors.cardBorder,
+                marginBottom: 14,
+              }}
             >
               <View>
-                <Text className="text-xs font-bold text-white">Payment Status</Text>
-                <Text className="text-[11px] text-slate-400">
-                  {isPaid ? 'Marked as already paid' : 'Marked as pending payment'}
+                <Text style={{ fontSize: 13, fontWeight: '700', color: colors.text }}>
+                  {t.isPaidLabel}
+                </Text>
+                <Text style={{ fontSize: 11, color: colors.textMuted, marginTop: 2 }}>
+                  {isPaid ? t.paid : t.pending}
                 </Text>
               </View>
               <View
-                className={`w-6 h-6 rounded-md items-center justify-center border ${
-                  isPaid ? 'bg-emeraldCustom border-emerald-400' : 'border-white/20'
-                }`}
+                style={{
+                  width: 24,
+                  height: 24,
+                  borderRadius: 6,
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  backgroundColor: isPaid ? colors.success : 'transparent',
+                  borderWidth: 1,
+                  borderColor: isPaid ? colors.success : colors.cardBorder,
+                }}
               >
                 {isPaid ? <Ionicons name="checkmark" size={16} color="#FFFFFF" /> : null}
               </View>
@@ -226,19 +394,51 @@ export const AddExpenseModal: React.FC<AddExpenseModalProps> = ({
           </ScrollView>
 
           {/* Action Buttons */}
-          <View className="flex-row gap-3 pt-2 border-t border-white/10">
+          <View
+            style={{
+              flexDirection: 'row',
+              gap: 10,
+              paddingTop: 10,
+              borderTopWidth: 1,
+              borderTopColor: colors.borderSubtle,
+            }}
+          >
             <TouchableOpacity
               onPress={onClose}
-              className="flex-1 py-3.5 rounded-xl bg-white/5 items-center justify-center"
+              style={{
+                flex: 1,
+                paddingVertical: 12,
+                borderRadius: 12,
+                backgroundColor: colors.cardLight,
+                alignItems: 'center',
+                justifyContent: 'center',
+                borderWidth: 1,
+                borderColor: colors.cardBorder,
+              }}
             >
-              <Text className="text-xs font-bold text-slate-300 uppercase">Cancel</Text>
+              <Text style={{ fontSize: 13, fontWeight: '700', color: colors.textMuted }}>
+                {t.cancel}
+              </Text>
             </TouchableOpacity>
 
             <TouchableOpacity
               onPress={handleSave}
-              className="flex-1 py-3.5 rounded-xl bg-primary items-center justify-center shadow-lg shadow-primary/30"
+              style={{
+                flex: 1,
+                paddingVertical: 12,
+                borderRadius: 12,
+                backgroundColor: colors.primary,
+                alignItems: 'center',
+                justifyContent: 'center',
+                shadowColor: colors.primary,
+                shadowOpacity: 0.35,
+                shadowRadius: 6,
+                elevation: 3,
+              }}
             >
-              <Text className="text-xs font-black text-white uppercase">Save Expense</Text>
+              <Text style={{ fontSize: 13, fontWeight: '900', color: '#FFFFFF' }}>
+                {t.save}
+              </Text>
             </TouchableOpacity>
           </View>
         </View>

@@ -1,13 +1,17 @@
 import React from 'react';
 import { View, Text, TouchableOpacity } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
-import { Currency, MonthlyBudget } from '../types/expense';
+import { AppLocale, Currency, MonthlyBudget } from '../types/expense';
 import { ExpenseTotals, formatCurrency } from '../utils/formatters';
+import { ThemeColors } from '../utils/theme';
+import { getTranslations } from '../utils/i18n';
 
 interface BudgetSummaryCardProps {
   budget: MonthlyBudget;
   totals: ExpenseTotals;
   currency: Currency;
+  locale: AppLocale;
+  colors: ThemeColors;
   onEditIncome: () => void;
 }
 
@@ -15,105 +19,274 @@ export const BudgetSummaryCard: React.FC<BudgetSummaryCardProps> = ({
   budget,
   totals,
   currency,
+  locale,
+  colors,
   onEditIncome,
 }) => {
+  const t = getTranslations(locale);
   const remainingDisposable = budget.monthlyIncome - totals.total;
-  const percentSpent = budget.monthlyIncome > 0 
-    ? Math.min(Math.round((totals.total / budget.monthlyIncome) * 100), 100) 
-    : 0;
+  const percentSpent =
+    budget.monthlyIncome > 0
+      ? Math.min(Math.round((totals.total / budget.monthlyIncome) * 100), 100)
+      : 0;
 
   const isPositive = remainingDisposable >= 0;
 
   return (
-    <View className="mx-5 my-4 p-5 rounded-2xl bg-card border border-white/10 shadow-xl">
-      {/* Top Section: Income and Edit Action */}
-      <View className="flex-row items-center justify-between pb-3 border-b border-white/5">
+    <View
+      style={{
+        marginHorizontal: 20,
+        marginVertical: 12,
+        padding: 20,
+        borderRadius: 20,
+        backgroundColor: colors.card,
+        borderWidth: 1,
+        borderColor: colors.cardBorder,
+        shadowColor: '#000',
+        shadowOpacity: 0.15,
+        shadowRadius: 10,
+        elevation: 4,
+      }}
+    >
+      {/* Top: Income & Edit Button */}
+      <View
+        style={{
+          flexDirection: 'row',
+          alignItems: 'center',
+          justifyContent: 'space-between',
+          paddingBottom: 12,
+          borderBottomWidth: 1,
+          borderBottomColor: colors.borderSubtle,
+        }}
+      >
         <View>
-          <Text className="text-[11px] font-bold text-slate-400 uppercase tracking-wider">
-            Monthly Income
+          <Text
+            style={{
+              fontSize: 11,
+              fontWeight: '700',
+              color: colors.textMuted,
+              textTransform: 'uppercase',
+              letterSpacing: 0.5,
+            }}
+          >
+            {t.monthlyIncome}
           </Text>
-          <Text className="text-lg font-black text-white mt-0.5">
+          <Text
+            style={{
+              fontSize: 18,
+              fontWeight: '900',
+              color: colors.text,
+              marginTop: 2,
+            }}
+          >
             {formatCurrency(budget.monthlyIncome, currency)}
           </Text>
         </View>
 
         <TouchableOpacity
           onPress={onEditIncome}
-          className="flex-row items-center gap-1 px-2.5 py-1 rounded-full bg-white/5 border border-white/10 active:bg-white/10"
+          activeOpacity={0.8}
+          style={{
+            flexDirection: 'row',
+            alignItems: 'center',
+            gap: 4,
+            paddingHorizontal: 10,
+            paddingVertical: 6,
+            borderRadius: 10,
+            backgroundColor: colors.cardLight,
+            borderWidth: 1,
+            borderColor: colors.cardBorder,
+          }}
         >
-          <Ionicons name="pencil-outline" size={12} color="#94A3B8" />
-          <Text className="text-[11px] font-semibold text-slate-300">Set Income</Text>
+          <Ionicons name="pencil-outline" size={12} color={colors.primary} />
+          <Text style={{ fontSize: 11, fontWeight: '700', color: colors.text }}>
+            {t.setIncome}
+          </Text>
         </TouchableOpacity>
       </View>
 
-      {/* Middle Section: Big Disposable Balance */}
-      <View className="my-4">
-        <Text className="text-xs font-semibold text-slate-400 uppercase tracking-wider">
-          Remaining Disposable Balance
+      {/* Main Disposable / Remaining Balance */}
+      <View style={{ marginVertical: 14 }}>
+        <Text
+          style={{
+            fontSize: 11,
+            fontWeight: '700',
+            color: colors.textMuted,
+            textTransform: 'uppercase',
+            letterSpacing: 0.5,
+          }}
+        >
+          {t.remainingBalance}
         </Text>
-        <View className="flex-row items-baseline gap-2 mt-1">
+        <View
+          style={{
+            flexDirection: 'row',
+            alignItems: 'baseline',
+            gap: 8,
+            marginTop: 4,
+          }}
+        >
           <Text
-            className={`text-3xl font-black tracking-tight ${
-              isPositive ? 'text-emeraldCustom' : 'text-roseCustom'
-            }`}
+            style={{
+              fontSize: 32,
+              fontWeight: '900',
+              color: isPositive ? colors.success : colors.danger,
+              letterSpacing: -1,
+            }}
           >
             {formatCurrency(remainingDisposable, currency)}
           </Text>
           <View
-            className={`px-2 py-0.5 rounded-md ${
-              isPositive ? 'bg-emerald-500/15' : 'bg-rose-500/15'
-            }`}
+            style={{
+              paddingHorizontal: 8,
+              paddingVertical: 2,
+              borderRadius: 6,
+              backgroundColor: isPositive ? 'rgba(16, 185, 129, 0.15)' : 'rgba(239, 68, 68, 0.15)',
+            }}
           >
             <Text
-              className={`text-[10px] font-black ${
-                isPositive ? 'text-emerald-400' : 'text-rose-400'
-              }`}
+              style={{
+                fontSize: 10,
+                fontWeight: '900',
+                color: isPositive ? colors.success : colors.danger,
+              }}
             >
-              {isPositive ? 'HEALTHY' : 'DEFICIT'}
+              {isPositive ? t.healthyBadge : t.warningBadge}
             </Text>
           </View>
         </View>
       </View>
 
-      {/* Progress Bar */}
-      <View className="mb-4">
-        <View className="flex-row justify-between mb-1.5">
-          <Text className="text-xs font-medium text-slate-400">Total Committed: {totals.count} expenses</Text>
-          <Text className="text-xs font-bold text-slate-200">{percentSpent}% of income</Text>
+      {/* Progress Bar of Committed Expenses */}
+      <View style={{ marginBottom: 14 }}>
+        <View
+          style={{
+            flexDirection: 'row',
+            justifyContent: 'space-between',
+            marginBottom: 6,
+          }}
+        >
+          <Text style={{ fontSize: 11, fontWeight: '600', color: colors.textMuted }}>
+            {t.totalCommitted}: {t.itemsCount(totals.count)}
+          </Text>
+          <Text style={{ fontSize: 11, fontWeight: '800', color: colors.text }}>
+            {percentSpent}% {t.expensesRatio}
+          </Text>
         </View>
-        <View className="w-full h-2 rounded-full bg-slate-800 overflow-hidden">
+
+        <View
+          style={{
+            width: '100%',
+            height: 7,
+            borderRadius: 4,
+            backgroundColor: colors.cardLight,
+            overflow: 'hidden',
+          }}
+        >
           <View
-            className={`h-full rounded-full ${
-              percentSpent > 85 ? 'bg-roseCustom' : percentSpent > 65 ? 'bg-amberCustom' : 'bg-primary'
-            }`}
-            style={{ width: `${percentSpent}%` }}
+            style={{
+              height: '100%',
+              borderRadius: 4,
+              backgroundColor:
+                percentSpent > 85 ? colors.danger : percentSpent > 60 ? colors.warning : colors.primary,
+              width: `${percentSpent}%`,
+            }}
           />
         </View>
       </View>
 
-      {/* Bottom Section: Paid vs Pending Pills */}
-      <View className="flex-row items-center gap-3 pt-3 border-t border-white/5">
+      {/* Bottom Stats: Paid vs Pending */}
+      <View
+        style={{
+          flexDirection: 'row',
+          alignItems: 'center',
+          gap: 10,
+          paddingTop: 12,
+          borderTopWidth: 1,
+          borderTopColor: colors.borderSubtle,
+        }}
+      >
         {/* Paid */}
-        <View className="flex-1 flex-row items-center gap-2 p-2.5 rounded-xl bg-emerald-500/10 border border-emerald-500/20">
-          <View className="w-6 h-6 rounded-full bg-emerald-500/20 items-center justify-center">
-            <Ionicons name="checkmark" size={14} color="#10B981" />
+        <View
+          style={{
+            flex: 1,
+            flexDirection: 'row',
+            alignItems: 'center',
+            gap: 8,
+            padding: 10,
+            borderRadius: 12,
+            backgroundColor: colors.cardLight,
+            borderWidth: 1,
+            borderColor: colors.cardBorder,
+          }}
+        >
+          <View
+            style={{
+              width: 26,
+              height: 26,
+              borderRadius: 13,
+              backgroundColor: 'rgba(16, 185, 129, 0.15)',
+              alignItems: 'center',
+              justifyContent: 'center',
+            }}
+          >
+            <Ionicons name="checkmark" size={15} color={colors.success} />
           </View>
           <View>
-            <Text className="text-[10px] font-bold text-emerald-400 uppercase">Paid ({totals.paidCount})</Text>
-            <Text className="text-xs font-bold text-white">
+            <Text
+              style={{
+                fontSize: 10,
+                fontWeight: '800',
+                color: colors.success,
+                textTransform: 'uppercase',
+              }}
+            >
+              {t.paid} ({totals.paidCount})
+            </Text>
+            <Text style={{ fontSize: 12, fontWeight: '800', color: colors.text, marginTop: 1 }}>
               {formatCurrency(totals.totalPaid, currency)}
             </Text>
           </View>
         </View>
 
         {/* Pending */}
-        <View className="flex-1 flex-row items-center gap-2 p-2.5 rounded-xl bg-amber-500/10 border border-amber-500/20">
-          <View className="w-6 h-6 rounded-full bg-amber-500/20 items-center justify-center">
-            <Ionicons name="time-outline" size={14} color="#F59E0B" />
+        <View
+          style={{
+            flex: 1,
+            flexDirection: 'row',
+            alignItems: 'center',
+            gap: 8,
+            padding: 10,
+            borderRadius: 12,
+            backgroundColor: colors.cardLight,
+            borderWidth: 1,
+            borderColor: colors.cardBorder,
+          }}
+        >
+          <View
+            style={{
+              width: 26,
+              height: 26,
+              borderRadius: 13,
+              backgroundColor: 'rgba(245, 158, 11, 0.15)',
+              alignItems: 'center',
+              justifyContent: 'center',
+            }}
+          >
+            <Ionicons name="time-outline" size={15} color={colors.warning} />
           </View>
           <View>
-            <Text className="text-[10px] font-bold text-amber-400 uppercase">Pending ({totals.pendingCount})</Text>
-            <Text className="text-xs font-bold text-white">
+            <Text
+              style={{
+                fontSize: 10,
+                fontWeight: '800',
+                color: colors.warning,
+                textTransform: 'uppercase',
+              }}
+            >
+              {t.pending} ({totals.pendingCount})
+            </Text>
+            <Text style={{ fontSize: 12, fontWeight: '800', color: colors.text, marginTop: 1 }}>
               {formatCurrency(totals.totalPending, currency)}
             </Text>
           </View>

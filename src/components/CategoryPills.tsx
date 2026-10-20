@@ -1,59 +1,65 @@
 import React from 'react';
 import { View, Text, TouchableOpacity, ScrollView } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
-import { CategoryFilter } from '../types/expense';
-import { ExpenseTotals } from '../utils/formatters';
+import { AppLocale, CategoryFilter, ExpenseItem } from '../types/expense';
+import { ThemeColors } from '../utils/theme';
+import { getTranslations } from '../utils/i18n';
 
 interface CategoryPillsProps {
   selectedCategory: CategoryFilter;
   onSelectCategory: (category: CategoryFilter) => void;
-  totals: ExpenseTotals;
+  expenses: ExpenseItem[];
+  locale: AppLocale;
+  colors: ThemeColors;
 }
 
 export const CategoryPills: React.FC<CategoryPillsProps> = ({
   selectedCategory,
   onSelectCategory,
-  totals,
+  expenses,
+  locale,
+  colors,
 }) => {
+  const t = getTranslations(locale);
+
+  const fixedCount = expenses.filter((e) => e.category === 'fixed').length;
+  const subCount = expenses.filter((e) => e.category === 'subscription').length;
+  const leisureCount = expenses.filter((e) => e.category === 'leisure').length;
+
   const tabs: Array<{
     id: CategoryFilter;
     label: string;
     count: number;
     icon: keyof typeof Ionicons.glyphMap;
-    activeColor: string;
   }> = [
     {
       id: 'all',
-      label: 'All',
-      count: totals.count,
+      label: t.all,
+      count: expenses.length,
       icon: 'apps-outline',
-      activeColor: 'bg-primary border-primary',
     },
     {
       id: 'fixed',
-      label: 'Fixed Bills',
-      count: totals.count > 0 ? totals.fixedTotal > 0 ? 6 : 0 : 0, // dynamic count
+      label: locale === 'es' ? 'Fijos' : 'Fixed',
+      count: fixedCount,
       icon: 'flash-outline',
-      activeColor: 'bg-blue-600 border-blue-500',
     },
     {
       id: 'subscription',
-      label: 'Subscriptions',
-      count: 4,
+      label: locale === 'es' ? 'Suscripciones' : 'Subs',
+      count: subCount,
       icon: 'repeat-outline',
-      activeColor: 'bg-purple-600 border-purple-500',
     },
     {
       id: 'leisure',
-      label: 'Leisure',
-      count: 4,
+      label: locale === 'es' ? 'Ocio' : 'Leisure',
+      count: leisureCount,
       icon: 'wine-outline',
-      activeColor: 'bg-rose-600 border-rose-500',
     },
   ];
 
   return (
-    <View className="px-5 mb-3">
+    <View style={{ paddingHorizontal: 20, marginBottom: 14 }}>
       <ScrollView
         horizontal
         showsHorizontalScrollIndicator={false}
@@ -65,24 +71,57 @@ export const CategoryPills: React.FC<CategoryPillsProps> = ({
             <TouchableOpacity
               key={tab.id}
               onPress={() => onSelectCategory(tab.id)}
-              className={`flex-row items-center gap-1.5 px-3.5 py-2 rounded-xl border ${
-                isSelected
-                  ? `${tab.activeColor} shadow-md shadow-primary/20`
-                  : 'bg-card border-white/10 active:bg-white/5'
-              }`}
+              activeOpacity={0.8}
+              style={{
+                flexDirection: 'row',
+                alignItems: 'center',
+                gap: 6,
+                paddingHorizontal: 14,
+                paddingVertical: 9,
+                borderRadius: 12,
+                backgroundColor: isSelected ? colors.pillActiveBg : colors.card,
+                borderWidth: 1,
+                borderColor: isSelected ? colors.pillActiveBg : colors.cardBorder,
+                shadowColor: isSelected ? colors.primary : '#000',
+                shadowOpacity: isSelected ? 0.3 : 0.05,
+                shadowRadius: 5,
+                elevation: isSelected ? 3 : 1,
+              }}
             >
               <Ionicons
                 name={tab.icon}
                 size={14}
-                color={isSelected ? '#FFFFFF' : '#94A3B8'}
+                color={isSelected ? '#FFFFFF' : colors.textMuted}
               />
               <Text
-                className={`text-xs font-bold ${
-                  isSelected ? 'text-white' : 'text-slate-300'
-                }`}
+                style={{
+                  fontSize: 12,
+                  fontWeight: '700',
+                  color: isSelected ? '#FFFFFF' : colors.text,
+                }}
               >
                 {tab.label}
               </Text>
+              {tab.count > 0 && (
+                <View
+                  style={{
+                    paddingHorizontal: 6,
+                    paddingVertical: 1,
+                    borderRadius: 10,
+                    backgroundColor: isSelected ? 'rgba(255, 255, 255, 0.25)' : colors.cardLight,
+                  }}
+                >
+                  <Text
+                    style={{
+                      fontSize: 10,
+                      fontWeight: '800',
+                      color: isSelected ? '#FFFFFF' : colors.textMuted,
+                    }}
+                  >
+                    {tab.count}
+                  </Text>
+                </View>
+              )}
             </TouchableOpacity>
           );
         })}

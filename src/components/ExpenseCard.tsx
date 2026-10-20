@@ -1,12 +1,16 @@
 import React from 'react';
 import { View, Text, TouchableOpacity } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
-import { Currency, ExpenseItem } from '../types/expense';
-import { formatCurrency, getCategoryBadge } from '../utils/formatters';
+import { AppLocale, Currency, ExpenseItem } from '../types/expense';
+import { formatCurrency } from '../utils/formatters';
+import { ThemeColors } from '../utils/theme';
+import { getTranslations } from '../utils/i18n';
 
 interface ExpenseCardProps {
   item: ExpenseItem;
   currency: Currency;
+  locale: AppLocale;
+  colors: ThemeColors;
   onTogglePaid: (id: string) => void;
   onDelete: (id: string) => void;
 }
@@ -14,108 +18,181 @@ interface ExpenseCardProps {
 export const ExpenseCard: React.FC<ExpenseCardProps> = ({
   item,
   currency,
+  locale,
+  colors,
   onTogglePaid,
   onDelete,
 }) => {
-  const badge = getCategoryBadge(item.category);
+  const t = getTranslations(locale);
+
+  const categoryLabel =
+    item.category === 'fixed'
+      ? locale === 'es'
+        ? 'Fijo'
+        : 'Fixed'
+      : item.category === 'subscription'
+      ? locale === 'es'
+        ? 'Suscripción'
+        : 'Sub'
+      : locale === 'es'
+      ? 'Ocio'
+      : 'Leisure';
 
   return (
-    <View className="mx-5 mb-3 p-4 rounded-2xl bg-card border border-white/5 shadow-md flex-row items-center justify-between">
+    <View
+      style={{
+        marginHorizontal: 20,
+        marginBottom: 10,
+        padding: 14,
+        borderRadius: 16,
+        backgroundColor: colors.card,
+        borderWidth: 1,
+        borderColor: colors.cardBorder,
+        flexDirection: 'row',
+        alignItems: 'center',
+        justifyContent: 'space-between',
+        shadowColor: '#000',
+        shadowOpacity: 0.08,
+        shadowRadius: 4,
+        elevation: 2,
+      }}
+    >
       {/* Left Column: Icon and Info */}
-      <View className="flex-row items-center gap-3.5 flex-1 pr-2">
-        {/* Category Color Icon */}
+      <View style={{ flexDirection: 'row', alignItems: 'center', gap: 12, flex: 1, paddingRight: 8 }}>
         <View
-          className="w-11 h-11 rounded-xl items-center justify-center border border-white/10"
-          style={{ backgroundColor: `${item.color}20` }}
+          style={{
+            width: 42,
+            height: 42,
+            borderRadius: 12,
+            backgroundColor: `${item.color}20`,
+            borderWidth: 1,
+            borderColor: `${item.color}40`,
+            alignItems: 'center',
+            justifyContent: 'center',
+          }}
         >
           <Ionicons
             name={item.iconName as keyof typeof Ionicons.glyphMap}
-            size={22}
+            size={20}
             color={item.color}
           />
         </View>
 
-        {/* Text Info */}
-        <View className="flex-1">
-          <View className="flex-row items-center gap-2">
-            <Text
-              numberOfLines={1}
-              className={`text-sm font-bold tracking-tight ${
-                item.isPaid ? 'text-slate-300 line-through' : 'text-white'
-              }`}
-            >
-              {item.title}
-            </Text>
-          </View>
+        <View style={{ flex: 1 }}>
+          <Text
+            numberOfLines={1}
+            style={{
+              fontSize: 14,
+              fontWeight: '700',
+              color: item.isPaid ? colors.textDim : colors.text,
+              textDecorationLine: item.isPaid ? 'line-through' : 'none',
+            }}
+          >
+            {item.title}
+          </Text>
 
           {item.notes ? (
-            <Text numberOfLines={1} className="text-xs text-slate-400 mt-0.5">
+            <Text
+              numberOfLines={1}
+              style={{
+                fontSize: 11,
+                color: colors.textMuted,
+                marginTop: 2,
+              }}
+            >
               {item.notes}
             </Text>
           ) : null}
 
           {/* Badges: Category & Due Day */}
-          <View className="flex-row items-center gap-2 mt-2">
+          <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6, marginTop: 6 }}>
             <View
-              className={`px-2 py-0.5 rounded-md border ${badge.bgColor} ${badge.borderColor}`}
+              style={{
+                paddingHorizontal: 6,
+                paddingVertical: 2,
+                borderRadius: 6,
+                backgroundColor: colors.cardLight,
+                borderWidth: 1,
+                borderColor: colors.cardBorder,
+              }}
             >
-              <Text className={`text-[10px] font-bold ${badge.textColor}`}>
-                {badge.label}
+              <Text style={{ fontSize: 9, fontWeight: '800', color: colors.primary }}>
+                {categoryLabel}
               </Text>
             </View>
 
-            <View className="flex-row items-center gap-1">
-              <Ionicons name="calendar-outline" size={10} color="#94A3B8" />
-              <Text className="text-[10px] font-medium text-slate-400">
-                Day {item.dueDate}
+            <View style={{ flexDirection: 'row', alignItems: 'center', gap: 3 }}>
+              <Ionicons name="calendar-outline" size={10} color={colors.textDim} />
+              <Text style={{ fontSize: 10, fontWeight: '600', color: colors.textDim }}>
+                {t.dayOfDue(item.dueDate)}
               </Text>
             </View>
           </View>
         </View>
       </View>
 
-      {/* Right Column: Amount, Paid Toggle & Delete */}
-      <View className="items-end gap-2">
-        {/* Amount */}
+      {/* Right Column: Amount & Actions */}
+      <View style={{ alignItems: 'flex-end', gap: 6 }}>
         <Text
-          className={`text-base font-black ${
-            item.isPaid ? 'text-slate-400' : 'text-white'
-          }`}
+          style={{
+            fontSize: 15,
+            fontWeight: '900',
+            color: item.isPaid ? colors.textDim : colors.text,
+          }}
         >
           {formatCurrency(item.amount, currency)}
         </Text>
 
-        <View className="flex-row items-center gap-2">
+        <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
           {/* Paid / Pending Toggle */}
           <TouchableOpacity
             onPress={() => onTogglePaid(item.id)}
-            className={`px-2.5 py-1 rounded-lg flex-row items-center gap-1 border active:opacity-80 ${
-              item.isPaid
-                ? 'bg-emerald-500/20 border-emerald-500/30'
-                : 'bg-amber-500/10 border-amber-500/30'
-            }`}
+            activeOpacity={0.8}
+            style={{
+              flexDirection: 'row',
+              alignItems: 'center',
+              gap: 4,
+              paddingHorizontal: 8,
+              paddingVertical: 4,
+              borderRadius: 8,
+              backgroundColor: item.isPaid ? 'rgba(16, 185, 129, 0.15)' : 'rgba(245, 158, 11, 0.15)',
+              borderWidth: 1,
+              borderColor: item.isPaid ? 'rgba(16, 185, 129, 0.3)' : 'rgba(245, 158, 11, 0.3)',
+            }}
           >
             <Ionicons
               name={item.isPaid ? 'checkmark-circle' : 'ellipse-outline'}
               size={12}
-              color={item.isPaid ? '#10B981' : '#F59E0B'}
+              color={item.isPaid ? colors.success : colors.warning}
             />
             <Text
-              className={`text-[10px] font-bold ${
-                item.isPaid ? 'text-emerald-400' : 'text-amber-400'
-              }`}
+              style={{
+                fontSize: 10,
+                fontWeight: '800',
+                color: item.isPaid ? colors.success : colors.warning,
+              }}
             >
-              {item.isPaid ? 'PAID' : 'PENDING'}
+              {item.isPaid ? t.paid.toUpperCase() : t.pending.toUpperCase()}
             </Text>
           </TouchableOpacity>
 
           {/* Delete Action */}
           <TouchableOpacity
             onPress={() => onDelete(item.id)}
-            className="w-7 h-7 rounded-lg bg-white/5 items-center justify-center border border-white/5 active:bg-rose-500/20"
+            activeOpacity={0.7}
+            style={{
+              width: 26,
+              height: 26,
+              borderRadius: 8,
+              backgroundColor: colors.cardLight,
+              alignItems: 'center',
+              justifyContent: 'center',
+              borderWidth: 1,
+              borderColor: colors.cardBorder,
+            }}
             accessibilityLabel={`Delete ${item.title}`}
           >
-            <Ionicons name="trash-outline" size={13} color="#94A3B8" />
+            <Ionicons name="trash-outline" size={13} color={colors.textDim} />
           </TouchableOpacity>
         </View>
       </View>

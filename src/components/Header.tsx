@@ -1,66 +1,179 @@
 import React from 'react';
 import { View, Text, TouchableOpacity } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
-import { Currency } from '../types/expense';
+import { AppLocale, AppTheme, Currency } from '../types/expense';
+import { CURRENCY_INFO } from '../utils/formatters';
+import { ThemeColors } from '../utils/theme';
+import { getTranslations } from '../utils/i18n';
 
 interface HeaderProps {
   currentCurrency: Currency;
-  onToggleCurrency: () => void;
-  onResetDemo: () => void;
+  currentTheme: AppTheme;
+  currentLocale: AppLocale;
+  onOpenPreferences: () => void;
   onOpenAddModal: () => void;
+  colors: ThemeColors;
 }
 
 export const Header: React.FC<HeaderProps> = ({
   currentCurrency,
-  onToggleCurrency,
-  onResetDemo,
+  currentTheme,
+  currentLocale,
+  onOpenPreferences,
   onOpenAddModal,
+  colors,
 }) => {
+  const t = getTranslations(currentLocale);
+  const isDark = currentTheme === 'dark';
+  const currencyInfo = CURRENCY_INFO[currentCurrency] || CURRENCY_INFO.ARS;
+
   return (
-    <View className="px-5 pt-3 pb-4 bg-background border-b border-white/5">
-      <View className="flex-row items-center justify-between">
-        <View className="flex-row items-center gap-2.5">
-          <View className="w-10 h-10 rounded-xl bg-primary/20 border border-primary/40 items-center justify-center">
-            <Ionicons name="wallet-outline" size={20} color="#818CF8" />
+    <View
+      style={{
+        paddingHorizontal: 20,
+        paddingTop: 8,
+        paddingBottom: 14,
+        backgroundColor: colors.bg,
+        borderBottomWidth: 1,
+        borderBottomColor: colors.borderSubtle,
+      }}
+    >
+      <View
+        style={{
+          flexDirection: 'row',
+          alignItems: 'center',
+          justifyContent: 'space-between',
+        }}
+      >
+        {/* Brand / Title */}
+        <View style={{ flexDirection: 'row', alignItems: 'center', gap: 10 }}>
+          <View
+            style={{
+              width: 38,
+              height: 38,
+              borderRadius: 12,
+              backgroundColor: colors.primary,
+              alignItems: 'center',
+              justifyContent: 'center',
+              shadowColor: colors.primary,
+              shadowOpacity: 0.35,
+              shadowRadius: 6,
+              elevation: 4,
+            }}
+          >
+            <Ionicons name="wallet-outline" size={20} color="#FFFFFF" />
           </View>
           <View>
-            <Text className="text-xl font-black text-white tracking-tight">
-              Pocket<Text className="text-primary">Expenses</Text>
+            <Text
+              style={{
+                fontSize: 18,
+                fontWeight: '900',
+                color: colors.text,
+                letterSpacing: -0.5,
+              }}
+            >
+              Pocket<Text style={{ color: colors.primary }}>Expenses</Text>
             </Text>
-            <Text className="text-xs text-slate-400 font-medium">
-              October 2026 · Fixed & Subs
+            <Text
+              style={{
+                fontSize: 11,
+                fontWeight: '600',
+                color: colors.textMuted,
+                marginTop: -1,
+              }}
+            >
+              {t.appSubtitle}
             </Text>
           </View>
         </View>
 
-        <View className="flex-row items-center gap-2">
-          {/* Currency Switcher */}
+        {/* Right Controls */}
+        <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
+          {/* Web-Style Preferences Pill Box */}
           <TouchableOpacity
-            onPress={onToggleCurrency}
-            className="px-2.5 py-1.5 rounded-lg bg-white/5 border border-white/10 flex-row items-center gap-1 active:bg-white/10"
-            accessibilityLabel={`Currency switcher, currently ${currentCurrency}`}
+            onPress={onOpenPreferences}
+            activeOpacity={0.8}
+            style={{
+              flexDirection: 'row',
+              alignItems: 'center',
+              gap: 6,
+              paddingHorizontal: 10,
+              paddingVertical: 7,
+              borderRadius: 12,
+              backgroundColor: colors.card,
+              borderWidth: 1,
+              borderColor: colors.cardBorder,
+              shadowColor: '#000',
+              shadowOpacity: isDark ? 0.2 : 0.05,
+              shadowRadius: 4,
+              elevation: 2,
+            }}
+            accessibilityLabel="Preferencias de tema, idioma y moneda"
           >
-            <Text className="text-xs font-bold text-slate-300">{currentCurrency}</Text>
-            <Ionicons name="swap-horizontal" size={12} color="#94A3B8" />
+            {/* Sun / Moon Icon */}
+            <Ionicons
+              name={isDark ? 'moon-outline' : 'sunny-outline'}
+              size={14}
+              color={colors.primary}
+            />
+
+            {/* Language Code Tag */}
+            <Text
+              style={{
+                fontSize: 11,
+                fontFamily: 'monospace',
+                fontWeight: '800',
+                color: colors.text,
+              }}
+            >
+              {currentLocale.toUpperCase()}
+            </Text>
+
+            {/* Currency Tag */}
+            <Text
+              style={{
+                fontSize: 11,
+                fontWeight: '700',
+                color: colors.textMuted,
+              }}
+            >
+              {currentCurrency}
+            </Text>
+
+            {/* Down chevron */}
+            <Ionicons name="chevron-down" size={12} color={colors.textDim} />
           </TouchableOpacity>
 
-          {/* Reset Demo Data Button */}
-          <TouchableOpacity
-            onPress={onResetDemo}
-            className="w-8 h-8 rounded-lg bg-white/5 border border-white/10 items-center justify-center active:bg-white/10"
-            accessibilityLabel="Reset to demo sample data"
-          >
-            <Ionicons name="refresh-outline" size={15} color="#94A3B8" />
-          </TouchableOpacity>
-
-          {/* Add New Expense Button */}
+          {/* New Expense Plus Button */}
           <TouchableOpacity
             onPress={onOpenAddModal}
-            className="px-3 py-1.5 rounded-lg bg-primary flex-row items-center gap-1 active:opacity-90 shadow-sm shadow-primary/40"
-            accessibilityLabel="Add new expense"
+            activeOpacity={0.85}
+            style={{
+              flexDirection: 'row',
+              alignItems: 'center',
+              gap: 4,
+              paddingHorizontal: 12,
+              paddingVertical: 8,
+              borderRadius: 12,
+              backgroundColor: colors.primary,
+              shadowColor: colors.primary,
+              shadowOpacity: 0.35,
+              shadowRadius: 6,
+              elevation: 3,
+            }}
+            accessibilityLabel="Agregar nuevo gasto"
           >
             <Ionicons name="add" size={16} color="#FFFFFF" />
-            <Text className="text-xs font-bold text-white uppercase tracking-wider">New</Text>
+            <Text
+              style={{
+                fontSize: 12,
+                fontWeight: '800',
+                color: '#FFFFFF',
+                letterSpacing: 0.3,
+              }}
+            >
+              {currentLocale === 'es' ? 'NUEVO' : 'NEW'}
+            </Text>
           </TouchableOpacity>
         </View>
       </View>
