@@ -15,6 +15,7 @@ export const DEFAULT_PREFERENCES: UserPreferences = {
   accent: 'lime',
   locale: 'es',
   currency: 'USD',
+  shakeToUpdate: true,
 };
 
 export const DEFAULT_BUDGET: MonthlyBudget = {

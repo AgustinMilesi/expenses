@@ -50,6 +50,7 @@ export interface UserPreferences {
   accent: AccentTheme;
   locale: AppLocale;
   currency: Currency;
+  shakeToUpdate?: boolean;
 }
 
 export type CategoryFilter = 'all' | 'fixed' | 'subscription' | 'leisure' | 'micro';

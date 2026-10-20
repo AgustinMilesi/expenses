@@ -33,6 +33,7 @@ interface HomeScreenProps {
   onTogglePaid: (expenseId: string) => void;
   onDeleteExpense: (expenseId: string) => void;
   onAddSubscription: () => void;
+  onCheckUpdates: () => void;
 }
 
 export const HomeScreen: React.FC<HomeScreenProps> = ({
@@ -49,6 +50,7 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({
   onTogglePaid,
   onDeleteExpense,
   onAddSubscription,
+  onCheckUpdates,
 }) => {
   const t = getTranslations(locale);
   const totals = calculateTotals(expenses, budget.monthlyIncome);
@@ -118,8 +120,17 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({
 
         <View style={styles.headerRightActions}>
           <TouchableOpacity
+            onPress={onCheckUpdates}
+            style={[styles.headerIconBtn, { backgroundColor: colors.card, borderColor: colors.cardBorder }]}
+            activeOpacity={0.8}
+          >
+            <Ionicons name="cloud-download-outline" size={18} color={colors.lime} />
+          </TouchableOpacity>
+
+          <TouchableOpacity
             onPress={onOpenPreferences}
             style={[styles.headerIconBtn, { backgroundColor: colors.card, borderColor: colors.cardBorder }]}
+            activeOpacity={0.8}
           >
             <Ionicons name="options-outline" size={18} color={colors.lime} />
           </TouchableOpacity>
@@ -127,6 +138,7 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({
           <TouchableOpacity
             onPress={onOpenNotifications}
             style={[styles.headerIconBtn, { backgroundColor: colors.card, borderColor: colors.cardBorder }]}
+            activeOpacity={0.8}
           >
             <Ionicons name="notifications-outline" size={18} color={colors.lime} />
             <View style={[styles.notificationDot, { backgroundColor: colors.danger }]} />
@@ -241,6 +253,31 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({
             </View>
           </View>
         </View>
+
+        {/* Shake & OTA Quick Info Banner */}
+        <TouchableOpacity
+          onPress={onCheckUpdates}
+          activeOpacity={0.8}
+          style={[
+            styles.shakeTipBanner,
+            { backgroundColor: colors.card, borderColor: colors.cardBorder },
+          ]}
+        >
+          <View style={[styles.shakeTipIconWrap, { backgroundColor: 'rgba(198, 248, 39, 0.15)' }]}>
+            <Ionicons name="phone-portrait-outline" size={15} color={colors.lime} />
+          </View>
+          <View style={{ flex: 1 }}>
+            <Text style={[styles.shakeTipTitle, { color: colors.text }]}>
+              {locale === 'es' ? '💡 Agitá el celular para actualizar' : '💡 Shake phone to update'}
+            </Text>
+            <Text style={[styles.shakeTipSubtitle, { color: colors.textMuted }]}>
+              {locale === 'es'
+                ? 'Comprueba e instala nuevas versiones al instante'
+                : 'Instantly check for and install new releases'}
+            </Text>
+          </View>
+          <Ionicons name="refresh" size={15} color={colors.lime} />
+        </TouchableOpacity>
 
         {/* Section: Subscriptions & Upcoming Due Dates (The horizontal cards) */}
         <View style={styles.sectionContainer}>
@@ -704,5 +741,32 @@ const styles = StyleSheet.create({
   emptyDesc: {
     fontSize: 12,
     textAlign: 'center',
+  },
+  shakeTipBanner: {
+    marginHorizontal: 20,
+    marginTop: 14,
+    marginBottom: 6,
+    paddingHorizontal: 14,
+    paddingVertical: 10,
+    borderRadius: 16,
+    borderWidth: 1,
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 12,
+  },
+  shakeTipIconWrap: {
+    width: 32,
+    height: 32,
+    borderRadius: 16,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  shakeTipTitle: {
+    fontSize: 12,
+    fontWeight: '800',
+  },
+  shakeTipSubtitle: {
+    fontSize: 10,
+    marginTop: 1,
   },
 });

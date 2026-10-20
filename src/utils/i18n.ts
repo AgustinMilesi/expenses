@@ -91,6 +91,20 @@ export const TRANSLATIONS = {
     close: 'Cerrar',
     apply: 'Aplicar',
 
+    // Updates & Shake Gesture
+    updatesSection: 'Actualizaciones del Sistema (OTA)',
+    checkForUpdates: 'Buscar y aplicar actualización',
+    shakeToUpdateTitle: 'Agitar para actualizar',
+    shakeToUpdateDesc: 'Agitá tu celular en cualquier pantalla para buscar e instalar actualizaciones al instante.',
+    shakeDetectedTitle: '¡Sacudida detectada!',
+    manualUpdateTitle: 'Actualización del Sistema',
+    checkingUpdates: 'Comprobando si hay una nueva versión...',
+    downloadingUpdate: '¡Nueva versión encontrada! Descargando paquete...',
+    updateReady: '¡Actualización descargada! Reiniciando la app...',
+    upToDate: 'Tu aplicación ya cuenta con la última versión disponible.',
+    updateError: 'No se pudo conectar con el servidor de actualizaciones o estás en modo desarrollo.',
+    restartNow: 'Reiniciar Ahora',
+
     // Navigation
     homeTab: 'Resumen',
     subsTab: 'Suscripciones',
@@ -201,6 +215,20 @@ export const TRANSLATIONS = {
     appVersion: 'App Version',
     close: 'Close',
     apply: 'Apply',
+
+    // Updates & Shake Gesture
+    updatesSection: 'System Updates (OTA)',
+    checkForUpdates: 'Check & apply update',
+    shakeToUpdateTitle: 'Shake to update',
+    shakeToUpdateDesc: 'Shake your device anywhere to check for and install updates instantly.',
+    shakeDetectedTitle: 'Shake detected!',
+    manualUpdateTitle: 'System Update',
+    checkingUpdates: 'Checking for new releases...',
+    downloadingUpdate: 'New release found! Downloading update bundle...',
+    updateReady: 'Update downloaded! Restarting app...',
+    upToDate: 'Your app is already running the latest version.',
+    updateError: 'Could not connect to update server or running in dev mode.',
+    restartNow: 'Restart Now',
 
     // Navigation
     homeTab: 'Overview',
@@ -313,6 +341,20 @@ export const TRANSLATIONS = {
     close: 'Fechar',
     apply: 'Aplicar',
 
+    // Updates & Shake Gesture
+    updatesSection: 'Atualizações do Sistema (OTA)',
+    checkForUpdates: 'Buscar e aplicar atualização',
+    shakeToUpdateTitle: 'Agitar para atualizar',
+    shakeToUpdateDesc: 'Agite o celular em qualquer tela para buscar e instalar atualizações instantaneamente.',
+    shakeDetectedTitle: 'Agitação detectada!',
+    manualUpdateTitle: 'Atualização do Sistema',
+    checkingUpdates: 'Verificando novas versões...',
+    downloadingUpdate: 'Nova versão encontrada! Baixando atualização...',
+    updateReady: 'Atualização baixada! Reiniciando o app...',
+    upToDate: 'Seu app já está atualizado com a versão mais recente.',
+    updateError: 'Não foi possível conectar ao servidor ou você está em modo dev.',
+    restartNow: 'Reiniciar Agora',
+
     // Navigation
     homeTab: 'Resumo',
     subsTab: 'Assinaturas',
@@ -423,6 +465,20 @@ export const TRANSLATIONS = {
     appVersion: '应用程序版本',
     close: '关闭',
     apply: '保存应用',
+
+    // Updates & Shake Gesture
+    updatesSection: '系统热更新 (OTA)',
+    checkForUpdates: '检查并安装更新',
+    shakeToUpdateTitle: '摇一摇检查更新',
+    shakeToUpdateDesc: '在任意页面摇晃手机即可立即检查并安装最新版本。',
+    shakeDetectedTitle: '检测到摇一摇手势！',
+    manualUpdateTitle: '系统更新',
+    checkingUpdates: '正在检查服务器是否有新版本...',
+    downloadingUpdate: '发现新版本！正在下载安装包...',
+    updateReady: '新版本已下载完毕！正在重启应用...',
+    upToDate: '您的应用程序已经是最新版本。',
+    updateError: '无法连接到更新服务器或当前处于开发模式。',
+    restartNow: '立即重启',
 
     // Navigation
     homeTab: '概览',

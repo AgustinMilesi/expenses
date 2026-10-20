@@ -38,6 +38,8 @@ import { EditIncomeModal } from './src/components/EditIncomeModal';
 import { AddExpenseModal } from './src/components/AddExpenseModal';
 import { LegalModal } from './src/components/LegalModal';
 import { UpdateBanner } from './src/components/UpdateBanner';
+import { UpdateModal, UpdateTriggerType } from './src/components/UpdateModal';
+import { useShakeToUpdate } from './src/hooks/useShakeToUpdate';
 
 export default function App() {
   const [isLoading, setIsLoading] = useState(true);
@@ -51,6 +53,11 @@ export default function App() {
   const [accent, setAccent] = useState<AccentTheme>('lime');
   const [locale, setLocale] = useState<AppLocale>('es');
   const [currency, setCurrency] = useState<Currency>('USD');
+  const [shakeToUpdate, setShakeToUpdate] = useState<boolean>(true);
+
+  // Updates Modal
+  const [isUpdateModalOpen, setIsUpdateModalOpen] = useState(false);
+  const [updateTriggerType, setUpdateTriggerType] = useState<UpdateTriggerType>('manual');
 
   // Navigation
   const [activeTab, setActiveTab] = useState<ActiveTab>('home');
@@ -67,6 +74,17 @@ export default function App() {
   const colors = useMemo(() => getThemeColors(theme, accent), [theme, accent]);
   const t = useMemo(() => getTranslations(locale), [locale]);
 
+  // Handle OTA update triggers (Shake or manual button)
+  const handleTriggerUpdate = (type: UpdateTriggerType) => {
+    setUpdateTriggerType(type);
+    setIsUpdateModalOpen(true);
+  };
+
+  // Hardware accelerometer listener for vigorous shake gestures
+  useShakeToUpdate(() => {
+    handleTriggerUpdate('shake');
+  }, { enabled: shakeToUpdate });
+
   // Load Persisted Data on Startup
   useEffect(() => {
     async function init() {
@@ -81,6 +99,7 @@ export default function App() {
         setAccent(loadedPrefs.accent || 'lime');
         setLocale(loadedPrefs.locale);
         setCurrency(loadedPrefs.currency);
+        setShakeToUpdate(loadedPrefs.shakeToUpdate !== false);
 
         setBudget({
           ...loadedBudget,
@@ -99,17 +118,17 @@ export default function App() {
   // Preference Handlers
   const handleSelectTheme = async (newTheme: AppTheme) => {
     setTheme(newTheme);
-    await savePreferences({ theme: newTheme, accent, locale, currency });
+    await savePreferences({ theme: newTheme, accent, locale, currency, shakeToUpdate });
   };
 
   const handleSelectAccent = async (newAccent: AccentTheme) => {
     setAccent(newAccent);
-    await savePreferences({ theme, accent: newAccent, locale, currency });
+    await savePreferences({ theme, accent: newAccent, locale, currency, shakeToUpdate });
   };
 
   const handleSelectLocale = async (newLocale: AppLocale) => {
     setLocale(newLocale);
-    await savePreferences({ theme, accent, locale: newLocale, currency });
+    await savePreferences({ theme, accent, locale: newLocale, currency, shakeToUpdate });
   };
 
   const handleSelectCurrency = async (newCurrency: Currency) => {
@@ -117,9 +136,14 @@ export default function App() {
     const updatedBudget = { ...budget, currency: newCurrency };
     setBudget(updatedBudget);
     await Promise.all([
-      savePreferences({ theme, accent, locale, currency: newCurrency }),
+      savePreferences({ theme, accent, locale, currency: newCurrency, shakeToUpdate }),
       saveBudget(updatedBudget),
     ]);
+  };
+
+  const handleToggleShakeToUpdate = async (enabled: boolean) => {
+    setShakeToUpdate(enabled);
+    await savePreferences({ theme, accent, locale, currency, shakeToUpdate: enabled });
   };
 
   // Expense Handlers
@@ -219,6 +243,7 @@ export default function App() {
                   setQuickExpenseCategory('subscription');
                   setIsAddExpenseModalOpen(true);
                 }}
+                onCheckUpdates={() => handleTriggerUpdate('manual')}
               />
             )}
 
@@ -300,6 +325,9 @@ export default function App() {
           onSelectLocale={handleSelectLocale}
           currentCurrency={currency}
           onSelectCurrency={handleSelectCurrency}
+          shakeToUpdate={shakeToUpdate}
+          onToggleShakeToUpdate={handleToggleShakeToUpdate}
+          onCheckUpdates={() => handleTriggerUpdate('manual')}
           onOpenLegal={(type) => {
             setIsPreferencesOpen(false);
             setLegalModalType(type);
@@ -335,6 +363,15 @@ export default function App() {
           type={legalModalType}
           locale={locale}
           colors={colors}
+        />
+
+        {/* 5. Live Over-The-Air Update Modal (Manual or Shake Triggered) */}
+        <UpdateModal
+          visible={isUpdateModalOpen}
+          triggerType={updateTriggerType}
+          colors={colors}
+          locale={locale}
+          onClose={() => setIsUpdateModalOpen(false)}
         />
       </SafeAreaView>
     </SafeAreaProvider>

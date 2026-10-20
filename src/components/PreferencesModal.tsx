@@ -29,6 +29,9 @@ interface PreferencesModalProps {
   onSelectLocale: (locale: AppLocale) => void;
   currentCurrency: Currency;
   onSelectCurrency: (currency: Currency) => void;
+  shakeToUpdate: boolean;
+  onToggleShakeToUpdate: (enabled: boolean) => void;
+  onCheckUpdates: () => void;
   onOpenLegal: (type: 'terms' | 'privacy' | 'cookies') => void;
   colors: ThemeColors;
 }
@@ -44,6 +47,9 @@ export const PreferencesModal: React.FC<PreferencesModalProps> = ({
   onSelectLocale,
   currentCurrency,
   onSelectCurrency,
+  shakeToUpdate,
+  onToggleShakeToUpdate,
+  onCheckUpdates,
   onOpenLegal,
   colors,
 }) => {
@@ -293,7 +299,95 @@ export const PreferencesModal: React.FC<PreferencesModalProps> = ({
               </View>
             </View>
 
-            {/* 5. Legal & Compliance Section */}
+            {/* 5. OTA Updates & Shake to Update */}
+            <View style={styles.section}>
+              <Text style={[styles.sectionLabel, { color: colors.textDim }]}>
+                {t.updatesSection}
+              </Text>
+              <View
+                style={[
+                  styles.updateCard,
+                  {
+                    backgroundColor: colors.cardLight,
+                    borderColor: colors.cardBorder,
+                  },
+                ]}
+              >
+                {/* Manual Check Button */}
+                <TouchableOpacity
+                  onPress={() => {
+                    onClose();
+                    setTimeout(() => {
+                      onCheckUpdates();
+                    }, 250);
+                  }}
+                  activeOpacity={0.8}
+                  style={[styles.updateCheckBtn, { backgroundColor: colors.lime }]}
+                >
+                  <Ionicons name="cloud-download-outline" size={18} color={colors.limeText} />
+                  <Text style={[styles.updateCheckBtnText, { color: colors.limeText }]}>
+                    {t.checkForUpdates}
+                  </Text>
+                </TouchableOpacity>
+
+                <View style={[styles.legalDivider, { backgroundColor: colors.cardBorder, marginVertical: 12 }]} />
+
+                {/* Shake To Update Switch */}
+                <TouchableOpacity
+                  onPress={() => onToggleShakeToUpdate(!shakeToUpdate)}
+                  activeOpacity={0.85}
+                  style={styles.shakeRow}
+                >
+                  <View style={styles.shakeLeft}>
+                    <View
+                      style={[
+                        styles.shakeIconWrap,
+                        {
+                          backgroundColor: shakeToUpdate
+                            ? 'rgba(198, 248, 39, 0.15)'
+                            : 'rgba(150, 150, 150, 0.15)',
+                        },
+                      ]}
+                    >
+                      <Ionicons
+                        name="phone-portrait-outline"
+                        size={18}
+                        color={shakeToUpdate ? colors.lime : colors.textMuted}
+                      />
+                    </View>
+                    <View style={{ flex: 1 }}>
+                      <Text style={[styles.shakeTitle, { color: colors.text }]}>
+                        {t.shakeToUpdateTitle}
+                      </Text>
+                      <Text style={[styles.shakeSubtitle, { color: colors.textMuted }]}>
+                        {t.shakeToUpdateDesc}
+                      </Text>
+                    </View>
+                  </View>
+
+                  <View
+                    style={[
+                      styles.togglePill,
+                      {
+                        backgroundColor: shakeToUpdate ? colors.lime : colors.card,
+                        borderColor: shakeToUpdate ? colors.lime : colors.cardBorder,
+                      },
+                    ]}
+                  >
+                    <Text
+                      style={[
+                        styles.togglePillText,
+                        { color: shakeToUpdate ? colors.limeText : colors.textMuted },
+                      ]}
+                    >
+                      {shakeToUpdate ? 'ON' : 'OFF'}
+                    </Text>
+                  </View>
+                </TouchableOpacity>
+              </View>
+            </View>
+
+            {/* 6. Legal & Compliance Section */}
             <View style={styles.section}>
               <Text style={[styles.sectionLabel, { color: colors.textDim }]}>
                 {t.legalSection}
@@ -540,6 +634,61 @@ const styles = StyleSheet.create({
   legalDivider: {
     height: 1,
     marginHorizontal: 16,
+  },
+  updateCard: {
+    borderRadius: 18,
+    borderWidth: 1,
+    padding: 14,
+  },
+  updateCheckBtn: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 8,
+    paddingVertical: 12,
+    borderRadius: 12,
+  },
+  updateCheckBtnText: {
+    fontSize: 13,
+    fontWeight: '800',
+  },
+  shakeRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    gap: 10,
+  },
+  shakeLeft: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 10,
+    flex: 1,
+  },
+  shakeIconWrap: {
+    width: 36,
+    height: 36,
+    borderRadius: 18,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  shakeTitle: {
+    fontSize: 13,
+    fontWeight: '700',
+  },
+  shakeSubtitle: {
+    fontSize: 11,
+    marginTop: 2,
+    lineHeight: 15,
+  },
+  togglePill: {
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    borderRadius: 12,
+    borderWidth: 1,
+  },
+  togglePillText: {
+    fontSize: 11,
+    fontWeight: '800',
   },
   footerSection: {
     marginTop: 10,

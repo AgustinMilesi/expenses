@@ -80,6 +80,10 @@ Imported and unified with the enterprise suite (`erp`, `saas`, `sap`, `contact-p
    - 🇪🇸 Español • 🇺🇸 English • 🇧🇷 Português • 🇨🇳 中文
 4. **5 Global Currencies:**
    - 🇺🇸 `USD` ($) • 🇦🇷 `ARS` ($) • 🇪🇺 `EUR` (€) • 🇨🇳 `CNY` (¥) • 🇧🇷 `BRL` (R$)
+5. **📳 Shake to Update & In-App OTA Updater:**
+   - **Hardware Accelerometer Detection:** Shaking the physical device anywhere triggers an instant live update check with tactile haptic vibration (`Vibration.vibrate`).
+   - **Direct Check Button:** Available in the Home header and Preferences drawer (`🔄 Buscar y aplicar actualización`).
+   - **Live Modal State:** Displays real-time downloading progress, channel (`production`), and auto-reloads when new bundles are fetched.
 
 ---
 
