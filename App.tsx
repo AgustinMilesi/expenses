@@ -43,6 +43,7 @@ import { QRScannerModal } from './src/components/QRScannerModal';
 import { TopupModal } from './src/components/TopupModal';
 import { AddContactModal } from './src/components/AddContactModal';
 import { LegalModal } from './src/components/LegalModal';
+import { UpdateBanner } from './src/components/UpdateBanner';
 
 export default function App() {
   const [isLoading, setIsLoading] = useState(true);
@@ -287,6 +288,7 @@ export default function App() {
     <SafeAreaProvider>
       <SafeAreaView style={[styles.root, { backgroundColor: colors.bg }]} edges={['top', 'left', 'right']}>
         <StatusBar style={theme === 'dark' ? 'light' : 'dark'} />
+        <UpdateBanner colors={colors} locale={locale} />
 
         {/* View Switcher: Send Money Screen vs Main Navigation */}
         {currentScreen === 'sendMoney' ? (
