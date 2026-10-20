@@ -1,67 +1,215 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { ExpenseItem, MonthlyBudget } from '../types/expense';
-import { DEFAULT_BUDGET, INITIAL_EXPENSES } from '../data/mockExpenses';
+import {
+  AccentTheme,
+  AppLocale,
+  AppTheme,
+  CardItem,
+  ContactItem,
+  Currency,
+  TransactionItem,
+  UserWallet,
+} from '../types/expense';
 
-const EXPENSES_STORAGE_KEY = '@pocket_expenses_items_v1';
-const BUDGET_STORAGE_KEY = '@pocket_expenses_budget_v1';
+const PREFS_STORAGE_KEY = '@wallet_preferences_v3';
+const WALLET_STORAGE_KEY = '@wallet_user_data_v3';
+const TRANSACTIONS_STORAGE_KEY = '@wallet_transactions_v3';
+const CONTACTS_STORAGE_KEY = '@wallet_contacts_v3';
+const CARDS_STORAGE_KEY = '@wallet_cards_v3';
 
-export async function loadExpenses(): Promise<ExpenseItem[]> {
+export interface UserPreferences {
+  theme: AppTheme;
+  accent: AccentTheme;
+  locale: AppLocale;
+  currency: Currency;
+}
+
+export const DEFAULT_PREFERENCES: UserPreferences = {
+  theme: 'dark',
+  accent: 'lime',
+  locale: 'es',
+  currency: 'USD',
+};
+
+export const INITIAL_WALLET: UserWallet = {
+  accountHolder: 'Janvis David',
+  username: 'janvisd',
+  accountNumber: '••••••5890',
+  balance: 23590.73,
+  transferLimit: 10000.0,
+  currency: 'USD',
+  weeklyGrowthPercentage: 24,
+};
+
+export const INITIAL_CONTACTS: ContactItem[] = [
+  {
+    id: 'c1',
+    name: 'Alina',
+    handle: '@alina',
+    maskedAccount: '••••46',
+    initials: 'AL',
+  },
+  {
+    id: 'c2',
+    name: 'Mark',
+    handle: '@mark_k',
+    maskedAccount: '••••37',
+    initials: 'MK',
+  },
+  {
+    id: 'c3',
+    name: 'Rachel',
+    handle: '@rachel',
+    maskedAccount: '••••81',
+    initials: 'RC',
+  },
+  {
+    id: 'c4',
+    name: 'Kuraishi',
+    handle: '@kuraishi',
+    maskedAccount: '••••19',
+    initials: 'KH',
+  },
+];
+
+export const INITIAL_TRANSACTIONS: TransactionItem[] = [
+  {
+    id: 'tx-1',
+    type: 'send',
+    title: 'Send Money to Kuraishi H.',
+    recipientOrSender: 'Kuraishi H.',
+    amount: 450.0,
+    trxId: 'CJ4901TUZ0',
+    time: '05:29 PM',
+    date: 'Today',
+    category: 'transfer',
+  },
+  {
+    id: 'tx-2',
+    type: 'receive',
+    title: 'Receive from Alina',
+    recipientOrSender: 'Alina',
+    amount: 1250.0,
+    trxId: 'CJ790Z8UX4',
+    time: '12:37 PM',
+    date: 'Today',
+    category: 'income',
+  },
+];
+
+export const INITIAL_CARDS: CardItem[] = [
+  {
+    id: 'card-1',
+    cardHolder: 'Janvis David',
+    cardNumber: '7820 5500 0835 3501',
+    expiry: '12/30',
+    type: 'Credit',
+    brand: 'VISA',
+    isFrozen: false,
+    dailyLimit: 5000,
+  },
+];
+
+// Preferences
+export async function loadPreferences(): Promise<UserPreferences> {
   try {
-    const json = await AsyncStorage.getItem(EXPENSES_STORAGE_KEY);
-    if (json) {
-      const parsed = JSON.parse(json);
-      if (Array.isArray(parsed) && parsed.length > 0) {
-        return parsed;
-      }
+    const raw = await AsyncStorage.getItem(PREFS_STORAGE_KEY);
+    if (raw) {
+      return { ...DEFAULT_PREFERENCES, ...JSON.parse(raw) };
     }
-    // Seed with initial mock data on first launch
-    await saveExpenses(INITIAL_EXPENSES);
-    return INITIAL_EXPENSES;
-  } catch (error) {
-    console.warn('Failed to load expenses from AsyncStorage, falling back to mock data:', error);
-    return INITIAL_EXPENSES;
+  } catch (err) {
+    console.warn('Error loading preferences:', err);
+  }
+  return DEFAULT_PREFERENCES;
+}
+
+export async function savePreferences(prefs: UserPreferences): Promise<void> {
+  try {
+    await AsyncStorage.setItem(PREFS_STORAGE_KEY, JSON.stringify(prefs));
+  } catch (err) {
+    console.error('Error saving preferences:', err);
   }
 }
 
-export async function saveExpenses(items: ExpenseItem[]): Promise<void> {
+// Wallet
+export async function loadWallet(): Promise<UserWallet> {
   try {
-    await AsyncStorage.setItem(EXPENSES_STORAGE_KEY, JSON.stringify(items));
-  } catch (error) {
-    console.error('Failed to save expenses to AsyncStorage:', error);
-  }
-}
-
-export async function loadBudget(): Promise<MonthlyBudget> {
-  try {
-    const json = await AsyncStorage.getItem(BUDGET_STORAGE_KEY);
-    if (json) {
-      return JSON.parse(json);
+    const raw = await AsyncStorage.getItem(WALLET_STORAGE_KEY);
+    if (raw) {
+      return JSON.parse(raw);
     }
-    await saveBudget(DEFAULT_BUDGET);
-    return DEFAULT_BUDGET;
-  } catch (error) {
-    console.warn('Failed to load budget from AsyncStorage:', error);
-    return DEFAULT_BUDGET;
+  } catch (err) {
+    console.warn('Error loading wallet:', err);
+  }
+  return INITIAL_WALLET;
+}
+
+export async function saveWallet(wallet: UserWallet): Promise<void> {
+  try {
+    await AsyncStorage.setItem(WALLET_STORAGE_KEY, JSON.stringify(wallet));
+  } catch (err) {
+    console.error('Error saving wallet:', err);
   }
 }
 
-export async function saveBudget(budget: MonthlyBudget): Promise<void> {
+// Transactions
+export async function loadTransactions(): Promise<TransactionItem[]> {
   try {
-    await AsyncStorage.setItem(BUDGET_STORAGE_KEY, JSON.stringify(budget));
-  } catch (error) {
-    console.error('Failed to save budget to AsyncStorage:', error);
+    const raw = await AsyncStorage.getItem(TRANSACTIONS_STORAGE_KEY);
+    if (raw) {
+      return JSON.parse(raw);
+    }
+  } catch (err) {
+    console.warn('Error loading transactions:', err);
+  }
+  return INITIAL_TRANSACTIONS;
+}
+
+export async function saveTransactions(transactions: TransactionItem[]): Promise<void> {
+  try {
+    await AsyncStorage.setItem(TRANSACTIONS_STORAGE_KEY, JSON.stringify(transactions));
+  } catch (err) {
+    console.error('Error saving transactions:', err);
   }
 }
 
-export async function resetToDemoData(): Promise<{
-  expenses: ExpenseItem[];
-  budget: MonthlyBudget;
-}> {
+// Contacts
+export async function loadContacts(): Promise<ContactItem[]> {
   try {
-    await AsyncStorage.setItem(EXPENSES_STORAGE_KEY, JSON.stringify(INITIAL_EXPENSES));
-    await AsyncStorage.setItem(BUDGET_STORAGE_KEY, JSON.stringify(DEFAULT_BUDGET));
-  } catch (error) {
-    console.error('Failed to reset demo data:', error);
+    const raw = await AsyncStorage.getItem(CONTACTS_STORAGE_KEY);
+    if (raw) {
+      return JSON.parse(raw);
+    }
+  } catch (err) {
+    console.warn('Error loading contacts:', err);
   }
-  return { expenses: INITIAL_EXPENSES, budget: DEFAULT_BUDGET };
+  return INITIAL_CONTACTS;
+}
+
+export async function saveContacts(contacts: ContactItem[]): Promise<void> {
+  try {
+    await AsyncStorage.setItem(CONTACTS_STORAGE_KEY, JSON.stringify(contacts));
+  } catch (err) {
+    console.error('Error saving contacts:', err);
+  }
+}
+
+// Cards
+export async function loadCards(): Promise<CardItem[]> {
+  try {
+    const raw = await AsyncStorage.getItem(CARDS_STORAGE_KEY);
+    if (raw) {
+      return JSON.parse(raw);
+    }
+  } catch (err) {
+    console.warn('Error loading cards:', err);
+  }
+  return INITIAL_CARDS;
+}
+
+export async function saveCards(cards: CardItem[]): Promise<void> {
+  try {
+    await AsyncStorage.setItem(CARDS_STORAGE_KEY, JSON.stringify(cards));
+  } catch (err) {
+    console.error('Error saving cards:', err);
+  }
 }

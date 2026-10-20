@@ -1,22 +1,62 @@
-import { Currency, ExpenseCategory, ExpenseItem } from '../types/expense';
+import { Currency, ExpenseCategory, ExpenseItem, TransactionItem } from '../types/expense';
 
-export const CURRENCY_SYMBOLS: Record<Currency, string> = {
-  USD: '$',
-  ARS: 'ARS $',
-  EUR: '€',
+export const CURRENCY_INFO: Record<Currency, { symbol: string; label: string; flag: string }> = {
+  ARS: { symbol: '$', label: 'ARS (Pesos Argentinos)', flag: '🇦🇷' },
+  USD: { symbol: '$', label: 'USD (US Dollars)', flag: '🇺🇸' },
+  EUR: { symbol: '€', label: 'EUR (Euros)', flag: '🇪🇺' },
+  CNY: { symbol: '¥', label: 'CNY (Chinese Yuan)', flag: '🇨🇳' },
+  BRL: { symbol: 'R$', label: 'BRL (Reais Brasileiros)', flag: '🇧🇷' },
 };
 
 export function formatCurrency(amount: number, currency: Currency = 'USD'): string {
-  const symbol = CURRENCY_SYMBOLS[currency] || '$';
-  const formattedNumber = amount.toLocaleString('en-US', {
-    minimumFractionDigits: 0,
+  const info = CURRENCY_INFO[currency] || CURRENCY_INFO.USD;
+  const locale =
+    currency === 'ARS'
+      ? 'es-AR'
+      : currency === 'EUR'
+      ? 'de-DE'
+      : currency === 'CNY'
+      ? 'zh-CN'
+      : currency === 'BRL'
+      ? 'pt-BR'
+      : 'en-US';
+
+  const formattedNumber = amount.toLocaleString(locale, {
+    minimumFractionDigits: 2,
     maximumFractionDigits: 2,
   });
 
   if (currency === 'EUR') {
-    return `${formattedNumber} ${symbol}`;
+    return `${formattedNumber} €`;
   }
-  return `${symbol}${formattedNumber}`;
+  return `${info.symbol}${formattedNumber}`;
+}
+
+export function formatCardNumber(num: string): string {
+  const clean = num.replace(/\D/g, '');
+  const chunks = clean.match(/.{1,4}/g);
+  return chunks ? chunks.join(' ') : num;
+}
+
+export function generateTrxId(): string {
+  const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
+  let res = 'CJ';
+  for (let i = 0; i < 8; i++) {
+    res += chars.charAt(Math.floor(Math.random() * chars.length));
+  }
+  return res;
+}
+
+export function getCurrentTimeFormatted(): string {
+  const now = new Date();
+  let hours = now.getHours();
+  const minutes = now.getMinutes();
+  const ampm = hours >= 12 ? 'PM' : 'AM';
+  hours = hours % 12;
+  hours = hours ? hours : 12;
+  const strMinutes = minutes < 10 ? '0' + minutes : minutes;
+  const strHours = hours < 10 ? '0' + hours : hours;
+  return `${strHours}:${strMinutes} ${ampm}`;
 }
 
 export interface ExpenseTotals {
@@ -65,33 +105,22 @@ export function calculateTotals(items: ExpenseItem[]): ExpenseTotals {
   );
 }
 
-export function getCategoryBadge(category: ExpenseCategory): {
-  label: string;
-  bgColor: string;
-  textColor: string;
-  borderColor: string;
+export function calculateTransactionTotals(items: TransactionItem[]): {
+  totalInflow: number;
+  totalOutflow: number;
+  netChange: number;
 } {
-  switch (category) {
-    case 'fixed':
-      return {
-        label: 'Fixed Bill',
-        bgColor: 'bg-blue-500/10',
-        textColor: 'text-blue-400',
-        borderColor: 'border-blue-500/20',
-      };
-    case 'subscription':
-      return {
-        label: 'Subscription',
-        bgColor: 'bg-purple-500/10',
-        textColor: 'text-purple-400',
-        borderColor: 'border-purple-500/20',
-      };
-    case 'leisure':
-      return {
-        label: 'Leisure & Outing',
-        bgColor: 'bg-rose-500/10',
-        textColor: 'text-rose-400',
-        borderColor: 'border-rose-500/20',
-      };
-  }
+  return items.reduce(
+    (acc, item) => {
+      if (item.type === 'receive' || item.type === 'deposit') {
+        acc.totalInflow += item.amount;
+        acc.netChange += item.amount;
+      } else {
+        acc.totalOutflow += item.amount;
+        acc.netChange -= item.amount;
+      }
+      return acc;
+    },
+    { totalInflow: 0, totalOutflow: 0, netChange: 0 }
+  );
 }
