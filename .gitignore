@@ -45,4 +45,8 @@ Desktop.ini
 # local agent tooling
 .agents/
 .claude/
+.impeccable/
+impeccable/
+superpowers/
+ponytail/
 skills-lock.json
