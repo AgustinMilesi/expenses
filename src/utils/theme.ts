@@ -20,6 +20,8 @@ export interface ThemeColors {
   purple: string;
   lime: string;
   limeText: string;
+  limeGlow: string;
+  limeGlowStrong: string;
   pillActiveBg: string;
   pillActiveText: string;
   pillInactiveBg: string;
@@ -41,23 +43,31 @@ export const ACCENT_PALETTES: AccentOption[] = [
   { id: 'violet', name: 'Clay Violet', hex: '#8B5CF6', colorClass: 'bg-[#8B5CF6]' },
 ];
 
+export function hexToRgba(hex: string, alpha: number): string {
+  const clean = hex.replace('#', '');
+  const r = parseInt(clean.substring(0, 2), 16) || 0;
+  const g = parseInt(clean.substring(2, 4), 16) || 0;
+  const b = parseInt(clean.substring(4, 6), 16) || 0;
+  return `rgba(${r}, ${g}, ${b}, ${alpha})`;
+}
+
 export function getThemeColors(mode: AppTheme = 'dark', accent: AccentTheme = 'lime'): ThemeColors {
   const selectedAccent = ACCENT_PALETTES.find((a) => a.id === accent) || ACCENT_PALETTES[0];
   const accentHex = selectedAccent.hex;
-  const isLightAccent = accent === 'lime' || accent === 'amber';
+  const isLightAccent = accent === 'lime' || accent === 'amber' || accent === 'cyan';
   const accentTextColor = isLightAccent ? '#0C1008' : '#FFFFFF';
 
   if (mode === 'dark') {
     return {
-      bg: '#0B0F07',
-      card: '#141A10',
-      cardBorder: '#232D1C',
-      cardLight: '#1B2316',
+      bg: '#0A0E14',
+      card: '#121824',
+      cardBorder: '#1E293B',
+      cardLight: '#182030',
       text: '#FFFFFF',
-      textMuted: '#9BA3AF',
-      textDim: '#60695B',
-      inputBg: '#11160D',
-      inputBorder: '#283320',
+      textMuted: '#94A3B8',
+      textDim: '#64748B',
+      inputBg: '#0F1520',
+      inputBorder: '#1E293B',
       primary: accentHex,
       primaryText: accentTextColor,
       accent: accentHex,
@@ -66,49 +76,54 @@ export function getThemeColors(mode: AppTheme = 'dark', accent: AccentTheme = 'l
       warning: '#F59E0B',
       danger: '#F87171',
       purple: '#8B5CF6',
-      lime: '#C6F827',
-      limeText: '#0C1008',
+      // DYNAMIC: follows the active accent theme selected by the user
+      lime: accentHex,
+      limeText: accentTextColor,
+      limeGlow: hexToRgba(accentHex, 0.16),
+      limeGlowStrong: hexToRgba(accentHex, 0.28),
       pillActiveBg: accentHex,
       pillActiveText: accentTextColor,
-      pillInactiveBg: '#1B2316',
-      pillInactiveText: '#9BA3AF',
+      pillInactiveBg: '#182030',
+      pillInactiveText: '#94A3B8',
       borderSubtle: 'rgba(255, 255, 255, 0.08)',
-      tabBarBg: '#131A0F',
-      tabBarBorder: '#222C1B',
-      keypadBg: '#171E13',
+      tabBarBg: '#0D121B',
+      tabBarBorder: '#1E293B',
+      keypadBg: '#121824',
       keypadText: '#FFFFFF',
     };
   }
 
   // Light Mode
   return {
-    bg: '#F5F7EE',
+    bg: '#F8FAFC',
     card: '#FFFFFF',
-    cardBorder: '#E2E8D5',
-    cardLight: '#EEF3E3',
-    text: '#0C1008',
-    textMuted: '#5E6754',
-    textDim: '#8A9480',
+    cardBorder: '#E2E8F0',
+    cardLight: '#F1F5F9',
+    text: '#0F172A',
+    textMuted: '#64748B',
+    textDim: '#94A3B8',
     inputBg: '#FFFFFF',
-    inputBorder: '#CBD5BE',
-    primary: accent === 'lime' ? '#5E880B' : accentHex,
-    primaryText: '#FFFFFF',
+    inputBorder: '#CBD5E1',
+    primary: accentHex,
+    primaryText: accentTextColor,
     accent: accentHex,
     accentText: accentTextColor,
     success: '#059669',
     warning: '#D97706',
     danger: '#DC2626',
     purple: '#7C3AED',
-    lime: '#C6F827',
-    limeText: '#0C1008',
-    pillActiveBg: accent === 'lime' ? '#5E880B' : accentHex,
-    pillActiveText: '#FFFFFF',
-    pillInactiveBg: '#EEF3E3',
-    pillInactiveText: '#5E6754',
+    lime: accentHex,
+    limeText: accentTextColor,
+    limeGlow: hexToRgba(accentHex, 0.16),
+    limeGlowStrong: hexToRgba(accentHex, 0.28),
+    pillActiveBg: accentHex,
+    pillActiveText: accentTextColor,
+    pillInactiveBg: '#F1F5F9',
+    pillInactiveText: '#64748B',
     borderSubtle: 'rgba(0, 0, 0, 0.06)',
     tabBarBg: '#FFFFFF',
-    tabBarBorder: '#E2E8D5',
-    keypadBg: '#E9EFE0',
-    keypadText: '#0C1008',
+    tabBarBorder: '#E2E8F0',
+    keypadBg: '#F1F5F9',
+    keypadText: '#0F172A',
   };
 }

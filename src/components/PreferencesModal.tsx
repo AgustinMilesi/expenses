@@ -349,7 +349,7 @@ export const PreferencesModal: React.FC<PreferencesModalProps> = ({
                         styles.shakeIconWrap,
                         {
                           backgroundColor: shakeToUpdate
-                            ? 'rgba(198, 248, 39, 0.15)'
+                            ? colors.limeGlow
                             : 'rgba(150, 150, 150, 0.15)',
                         },
                       ]}

@@ -145,7 +145,7 @@ export const HistoryView: React.FC<HistoryViewProps> = ({
                     style={[
                       styles.statusPill,
                       {
-                        backgroundColor: item.isPaid ? 'rgba(198, 248, 39, 0.15)' : 'rgba(239, 68, 68, 0.15)',
+                        backgroundColor: item.isPaid ? colors.limeGlow : 'rgba(239, 68, 68, 0.15)',
                       },
                     ]}
                   >

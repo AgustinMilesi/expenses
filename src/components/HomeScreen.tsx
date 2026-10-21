@@ -272,7 +272,7 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({
             { backgroundColor: colors.card, borderColor: colors.cardBorder },
           ]}
         >
-          <View style={[styles.shakeTipIconWrap, { backgroundColor: 'rgba(198, 248, 39, 0.15)' }]}>
+          <View style={[styles.shakeTipIconWrap, { backgroundColor: colors.limeGlow }]}>
             <Ionicons name="phone-portrait-outline" size={15} color={colors.lime} />
           </View>
           <View style={{ flex: 1 }}>
@@ -353,7 +353,7 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({
                 <View
                   style={[
                     styles.paidBadge,
-                    { backgroundColor: sub.isPaid ? 'rgba(198, 248, 39, 0.15)' : 'rgba(239, 68, 68, 0.15)' },
+                    { backgroundColor: sub.isPaid ? colors.limeGlow : 'rgba(239, 68, 68, 0.15)' },
                   ]}
                 >
                   <Ionicons
@@ -453,7 +453,7 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({
                       style={[
                         styles.statusPill,
                         {
-                          backgroundColor: expense.isPaid ? 'rgba(198, 248, 39, 0.15)' : 'rgba(239, 68, 68, 0.15)',
+                          backgroundColor: expense.isPaid ? colors.limeGlow : 'rgba(239, 68, 68, 0.15)',
                         },
                       ]}
                     >

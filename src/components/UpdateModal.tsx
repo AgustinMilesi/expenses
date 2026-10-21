@@ -133,7 +133,7 @@ export const UpdateModal: React.FC<UpdateModalProps> = ({
                 {
                   backgroundColor:
                     triggerType === 'shake'
-                      ? 'rgba(198, 248, 39, 0.2)'
+                      ? colors.limeGlowStrong
                       : 'rgba(59, 130, 246, 0.2)',
                   borderColor: triggerType === 'shake' ? colors.lime : '#3B82F6',
                 },
@@ -170,10 +170,10 @@ export const UpdateModal: React.FC<UpdateModalProps> = ({
                 {
                   backgroundColor:
                     status === 'ready' || status === 'upToDate'
-                      ? 'rgba(198, 248, 39, 0.15)'
+                      ? colors.limeGlow
                       : status === 'error'
                       ? 'rgba(239, 68, 68, 0.15)'
-                      : 'rgba(198, 248, 39, 0.1)',
+                      : colors.limeGlow,
                   borderColor:
                     status === 'error' ? colors.danger : colors.lime,
                 },

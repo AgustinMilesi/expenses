@@ -126,7 +126,7 @@ export const SearchView: React.FC<SearchViewProps> = ({
                       style={[
                         styles.statusPill,
                         {
-                          backgroundColor: expense.isPaid ? 'rgba(198, 248, 39, 0.15)' : 'rgba(239, 68, 68, 0.15)',
+                          backgroundColor: expense.isPaid ? colors.limeGlow : 'rgba(239, 68, 68, 0.15)',
                         },
                       ]}
                     >
