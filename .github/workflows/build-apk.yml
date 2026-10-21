@@ -48,11 +48,12 @@ jobs:
           EXPO_TOKEN: ${{ secrets.EXPO_TOKEN }}
         run: |
           echo "Fetching latest finished build from EAS..."
-          BUILD_JSON=$(npx --yes eas-cli build:list --platform android --status finished --limit 1 --json)
+          npx --yes eas-cli build:list --platform android --status finished --limit 1 --json > build.json
           node -e '
             const fs = require("fs");
-            const data = JSON.parse(process.env.BUILD_JSON);
-            const build = data[0];
+            const raw = fs.readFileSync("build.json", "utf8");
+            const data = JSON.parse(raw);
+            const build = Array.isArray(data) ? data[0] : data;
             if (!build) {
               console.error("No finished build found on EAS!");
               process.exit(1);
@@ -64,10 +65,10 @@ jobs:
               console.error("No APK download URL found in build artifacts!");
               process.exit(1);
             }
-            fs.writeFileSync("apk_url.txt", url);
+            fs.writeFileSync("apk_url.txt", url.trim());
           '
           APK_URL=$(cat apk_url.txt)
-          echo "Downloading VOUT.apk..."
+          echo "Downloading VOUT.apk from $APK_URL ..."
           curl -L -o VOUT.apk "$APK_URL"
           ls -lh VOUT.apk
 
