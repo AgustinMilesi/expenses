@@ -1,6 +1,6 @@
 {
   "name": "vout",
-  "version": "1.0.3",
+  "version": "1.0.3.1",
   "main": "index.ts",
   "dependencies": {
     "@expo/vector-icons": "^15.0.2",

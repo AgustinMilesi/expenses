@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   View,
   Text,
@@ -7,6 +7,7 @@ import {
   StyleSheet,
   Alert,
   TextInput,
+  BackHandler,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import {
@@ -111,12 +112,45 @@ export const AddExpenseScreen: React.FC<AddExpenseScreenProps> = ({
     }, 400);
   };
 
+  const handleSafeBack = () => {
+    if (amountCents > 0) {
+      Alert.alert(
+        locale === 'es' ? '¿Cancelar acción?' : 'Discard expense?',
+        locale === 'es'
+          ? 'Tenés un monto ingresado sin registrar. ¿Estás seguro de que querés salir?'
+          : 'You have entered an amount that is not saved yet. Are you sure you want to discard it?',
+        [
+          { text: locale === 'es' ? 'Continuar editando' : 'Keep editing', style: 'cancel' },
+          {
+            text: locale === 'es' ? 'Descartar' : 'Discard',
+            style: 'destructive',
+            onPress: () => {
+              setAmountCents(0);
+              onBack();
+            },
+          },
+        ]
+      );
+    } else {
+      onBack();
+    }
+  };
+
+  useEffect(() => {
+    const onBackPress = () => {
+      handleSafeBack();
+      return true;
+    };
+    const sub = BackHandler.addEventListener('hardwareBackPress', onBackPress);
+    return () => sub.remove();
+  }, [amountCents, locale]);
+
   return (
     <View style={[styles.screen, { backgroundColor: colors.bg }]}>
       {/* Top Header */}
       <View style={styles.topHeader}>
         <TouchableOpacity
-          onPress={onBack}
+          onPress={handleSafeBack}
           style={[styles.iconButton, { backgroundColor: colors.card, borderColor: colors.cardBorder }]}
         >
           <Ionicons name="arrow-back" size={20} color={colors.text} />

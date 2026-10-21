@@ -1,6 +1,6 @@
 import './global.css';
-import React, { useEffect, useMemo, useState } from 'react';
-import { View, ActivityIndicator, Alert, StyleSheet } from 'react-native';
+import React, { useEffect, useMemo, useState, useRef } from 'react';
+import { View, ActivityIndicator, Alert, StyleSheet, BackHandler, ToastAndroid, Platform } from 'react-native';
 import { StatusBar } from 'expo-status-bar';
 import { SafeAreaProvider, SafeAreaView } from 'react-native-safe-area-context';
 import {
@@ -95,6 +95,62 @@ export default function App() {
   useShakeToUpdate(() => {
     handleTriggerUpdate('shake');
   }, { enabled: shakeToUpdate, sensitivity: shakeSensitivity });
+
+  // Android Native Back Button & Gesture Handler (Double Back to Exit & Single Back to Dashboard)
+  const lastBackPressRef = useRef<number>(0);
+
+  const isAnyModalOpen =
+    isUpdateModalOpen ||
+    legalModalType !== null ||
+    isPreferencesOpen ||
+    isEditIncomeOpen ||
+    isAddExpenseModalOpen ||
+    isFixedExpensesModalOpen ||
+    isAddExtraIncomeOpen ||
+    isReconciliationModalOpen;
+
+  useEffect(() => {
+    const handleHardwareBackPress = () => {
+      // 1. If any modal is active, let the modal's onRequestClose manage safe exit
+      if (isAnyModalOpen) {
+        return false;
+      }
+
+      // 2. If inside quickExpense screen, let AddExpenseScreen handle it (with dirty prompt)
+      if (currentScreen === 'quickExpense') {
+        return false;
+      }
+
+      // 3. If on any tab other than Home (Subs, History, Search), 1 gesture returns to Dashboard
+      if (activeTab !== 'home') {
+        setActiveTab('home');
+        return true;
+      }
+
+      // 4. If already on Home Dashboard: require double back gesture within 2s to exit app
+      const now = Date.now();
+      if (now - lastBackPressRef.current < 2000) {
+        BackHandler.exitApp();
+        return true;
+      }
+
+      lastBackPressRef.current = now;
+      if (Platform.OS === 'android') {
+        ToastAndroid.show(
+          locale === 'es' ? 'Presioná de nuevo para salir de VOUT' : 'Press back again to exit VOUT',
+          ToastAndroid.SHORT
+        );
+      }
+      return true;
+    };
+
+    const backSubscription = BackHandler.addEventListener(
+      'hardwareBackPress',
+      handleHardwareBackPress
+    );
+
+    return () => backSubscription.remove();
+  }, [isAnyModalOpen, currentScreen, activeTab, locale]);
 
   // Load Persisted Data on Startup with Auto-Pay & Rollover Detection
   useEffect(() => {

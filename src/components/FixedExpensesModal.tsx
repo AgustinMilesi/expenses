@@ -117,6 +117,34 @@ export const FixedExpensesModal: React.FC<FixedExpensesModalProps> = ({
     setError('');
   };
 
+  const handleSafeClose = () => {
+    const isDirty = title.trim().length > 0 || amount.trim().length > 0;
+    if (isDirty) {
+      Alert.alert(
+        locale === 'es' ? '¿Cancelar acción?' : 'Discard changes?',
+        locale === 'es'
+          ? 'Tenés datos ingresados sin guardar. ¿Estás seguro de que querés salir?'
+          : 'You have unsaved changes. Are you sure you want to discard them?',
+        [
+          { text: locale === 'es' ? 'Continuar editando' : 'Keep editing', style: 'cancel' },
+          {
+            text: locale === 'es' ? 'Descartar' : 'Discard',
+            style: 'destructive',
+            onPress: () => {
+              setTitle('');
+              setAmount('');
+              setSelectedPresetId(null);
+              setError('');
+              onClose();
+            },
+          },
+        ]
+      );
+    } else {
+      onClose();
+    }
+  };
+
   const confirmDelete = (item: ExpenseItem) => {
     Alert.alert(
       locale === 'es' ? 'Eliminar gasto fijo' : 'Delete fixed expense',
@@ -129,7 +157,7 @@ export const FixedExpensesModal: React.FC<FixedExpensesModalProps> = ({
   };
 
   return (
-    <Modal visible={visible} animationType="slide" transparent={true} onRequestClose={onClose}>
+    <Modal visible={visible} animationType="slide" transparent={true} onRequestClose={handleSafeClose}>
       <KeyboardAvoidingView
         behavior={Platform.OS === 'ios' ? 'padding' : undefined}
         style={{
@@ -193,7 +221,7 @@ export const FixedExpensesModal: React.FC<FixedExpensesModalProps> = ({
             </View>
 
             <TouchableOpacity
-              onPress={onClose}
+              onPress={handleSafeClose}
               style={{
                 width: 34,
                 height: 34,

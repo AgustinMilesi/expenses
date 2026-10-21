@@ -7,6 +7,7 @@ import {
   TouchableOpacity,
   KeyboardAvoidingView,
   Platform,
+  Alert,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { AppLocale, Currency, IncomeType } from '../types/expense';
@@ -49,6 +50,34 @@ export const EditIncomeModal: React.FC<EditIncomeModalProps> = ({
     }
   }, [visible, currentIncome, currentIncomeType]);
 
+  const handleSafeClose = () => {
+    const originalIncomeStr = currentIncome > 0 ? currentIncome.toString() : '';
+    const isDirty = income.trim() !== originalIncomeStr || incomeType !== (currentIncomeType || 'fixed_salary');
+    if (isDirty && income.trim().length > 0) {
+      Alert.alert(
+        locale === 'es' ? '¿Cancelar acción?' : 'Discard changes?',
+        locale === 'es'
+          ? 'Tenés cambios sin guardar en tu ingreso. ¿Estás seguro de que querés salir?'
+          : 'You have unsaved changes. Are you sure you want to discard them?',
+        [
+          { text: locale === 'es' ? 'Continuar editando' : 'Keep editing', style: 'cancel' },
+          {
+            text: locale === 'es' ? 'Descartar' : 'Discard',
+            style: 'destructive',
+            onPress: () => {
+              setIncome(currentIncome > 0 ? currentIncome.toString() : '');
+              setIncomeType(currentIncomeType || 'fixed_salary');
+              setError('');
+              onClose();
+            },
+          },
+        ]
+      );
+    } else {
+      onClose();
+    }
+  };
+
   const handleSave = () => {
     const parsed = parseFloat(income);
     if (isNaN(parsed) || parsed < 0) {
@@ -61,7 +90,7 @@ export const EditIncomeModal: React.FC<EditIncomeModalProps> = ({
   };
 
   return (
-    <Modal visible={visible} animationType="fade" transparent={true} onRequestClose={onClose}>
+    <Modal visible={visible} animationType="fade" transparent={true} onRequestClose={handleSafeClose}>
       <KeyboardAvoidingView
         behavior={Platform.OS === 'ios' ? 'padding' : undefined}
         style={{
@@ -115,7 +144,7 @@ export const EditIncomeModal: React.FC<EditIncomeModalProps> = ({
                 {t.saveIncome}
               </Text>
             </View>
-            <TouchableOpacity onPress={onClose} style={{ padding: 4 }}>
+            <TouchableOpacity onPress={handleSafeClose} style={{ padding: 4 }}>
               <Ionicons name="close" size={20} color={colors.textMuted} />
             </TouchableOpacity>
           </View>
@@ -314,7 +343,7 @@ export const EditIncomeModal: React.FC<EditIncomeModalProps> = ({
           {/* Footer Action Buttons */}
           <View style={{ flexDirection: 'row', gap: 10 }}>
             <TouchableOpacity
-              onPress={onClose}
+              onPress={handleSafeClose}
               style={{
                 flex: 1,
                 paddingVertical: 13,

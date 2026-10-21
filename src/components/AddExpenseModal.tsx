@@ -8,6 +8,7 @@ import {
   ScrollView,
   KeyboardAvoidingView,
   Platform,
+  Alert,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { AppLocale, Currency, ExpenseCategory, ExpenseItem } from '../types/expense';
@@ -107,8 +108,39 @@ export const AddExpenseModal: React.FC<AddExpenseModalProps> = ({
     onClose();
   };
 
+  const handleSafeClose = () => {
+    const isDirty = title.trim().length > 0 || amount.trim().length > 0 || notes.trim().length > 0;
+    if (isDirty) {
+      Alert.alert(
+        locale === 'es' ? '¿Cancelar acción?' : 'Discard changes?',
+        locale === 'es'
+          ? 'Tenés datos ingresados sin guardar. ¿Estás seguro de que querés salir?'
+          : 'You have unsaved changes. Are you sure you want to discard them?',
+        [
+          { text: locale === 'es' ? 'Continuar editando' : 'Keep editing', style: 'cancel' },
+          {
+            text: locale === 'es' ? 'Descartar' : 'Discard',
+            style: 'destructive',
+            onPress: () => {
+              setTitle('');
+              setAmount('');
+              setCategory('fixed');
+              setDueDate('10');
+              setNotes('');
+              setIsPaid(false);
+              setError('');
+              onClose();
+            },
+          },
+        ]
+      );
+    } else {
+      onClose();
+    }
+  };
+
   return (
-    <Modal visible={visible} animationType="slide" transparent={true} onRequestClose={onClose}>
+    <Modal visible={visible} animationType="slide" transparent={true} onRequestClose={handleSafeClose}>
       <KeyboardAvoidingView
         behavior={Platform.OS === 'ios' ? 'padding' : undefined}
         style={{ flex: 1, justifyContent: 'flex-end', backgroundColor: 'rgba(0, 0, 0, 0.7)' }}
@@ -139,7 +171,7 @@ export const AddExpenseModal: React.FC<AddExpenseModalProps> = ({
               {t.newExpense}
             </Text>
             <TouchableOpacity
-              onPress={onClose}
+              onPress={handleSafeClose}
               style={{
                 width: 32,
                 height: 32,

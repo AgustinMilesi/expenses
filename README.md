@@ -5,7 +5,7 @@
 
 [![VOUT Ecosystem](https://img.shields.io/badge/VOUT-Ecosystem-C6F827?style=for-the-badge&logoColor=black&labelColor=0A0E14)](https://github.com/AgustinMilesi)
 [![VOUT ID](https://img.shields.io/badge/VOUT_ID-Unified_Pass-C6F827?style=for-the-badge&logo=shield&logoColor=black&labelColor=0A0E14)](https://github.com/AgustinMilesi/expenses)
-[![Download APK](https://img.shields.io/badge/Download_APK-VOUT_v1.0.3-C6F827?style=for-the-badge&logo=android&logoColor=black&labelColor=0A0E14)](https://expo.dev/accounts/agustinmilesi/projects/pocket-expenses/builds)
+[![Download APK](https://img.shields.io/badge/Download_APK-VOUT_v1.0.3.1-C6F827?style=for-the-badge&logo=android&logoColor=black&labelColor=0A0E14)](https://expo.dev/accounts/agustinmilesi/projects/pocket-expenses/builds)
 [![Platform](https://img.shields.io/badge/Platform-iOS_%7C_Android-10B981?style=for-the-badge&logo=expo&logoColor=white&labelColor=0A0E14)](https://github.com/AgustinMilesi/expenses)
 
 <p align="center">
