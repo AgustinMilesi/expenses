@@ -1,4 +1,4 @@
-name: Build Android APK (VOLT)
+name: Build Android APK (VOUT Pocket)
 
 on:
   workflow_dispatch:

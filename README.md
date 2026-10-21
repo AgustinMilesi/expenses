@@ -1,50 +1,51 @@
 <div align="center">
 
 # 📱 VOUT Pocket
-### Neo-Fintech Expenses, Subscriptions & Micro-Spending Tracker
+### Flagship Mobile Expense Companion, Budgeting & Real-Time Sync
 
 [![VOUT Ecosystem](https://img.shields.io/badge/VOUT-Ecosystem-C6F827?style=for-the-badge&logoColor=black&labelColor=0A0E14)](https://github.com/AgustinMilesi)
 [![VOUT ID](https://img.shields.io/badge/VOUT_ID-Unified_Pass-C6F827?style=for-the-badge&logo=shield&logoColor=black&labelColor=0A0E14)](https://github.com/AgustinMilesi/expenses)
 [![Download APK](https://img.shields.io/badge/Download_APK-VOUT_v1.0.0-C6F827?style=for-the-badge&logo=android&logoColor=black&labelColor=0A0E14)](https://expo.dev/accounts/agustinmilesi/projects/pocket-expenses/builds/e96134f5-2f11-4b67-9a96-d65a1b371b51)
 [![Platform](https://img.shields.io/badge/Platform-iOS_%7C_Android-10B981?style=for-the-badge&logo=expo&logoColor=white&labelColor=0A0E14)](https://github.com/AgustinMilesi/expenses)
 
+<p align="center">
+  <strong>La aplicación móvil insignia de finanzas personales que define el estándar de diseño y experiencia de todo el ecosistema VOUT.</strong>
+</p>
+
 </div>
 
 ---
 
-## 🎯 Overview
+## 🎯 Visión & Capacidades Móviles
 
-**VOUT Pocket** is a mobile expense tracker engineered for tracking real financial commitments, recurring streaming subscriptions, fixed household bills, and spontaneous daily micro-spending with zero dummy numbers.
-- ⚡ **Disposable Balance ("Safe to Spend"):** Real-time gauge calculating `Monthly Net Income - Committed Bills` to show uncommitted cash.
-- 🔁 **Subscriptions & Utilities:** Dedicated tracker for streaming (Netflix, Spotify), memberships, and bills with monthly due-day indicators and 1-tap payment toggles.
-- ☕ **Micro-spending Keypad:** Custom 3x4 numeric keypad for logging small transactions (coffee, snacks, transport) in under 2 seconds.
-- 📳 **Shake-to-Update:** Calibrated multi-hit accelerometer gesture to check for OTA app updates on the fly.
-- 🔑 **Cuenta VOUT (VOUT ID):** Unified membership profile syncing preferences with VOUT Retail, VOUT Cargo, and VOUT Inbox.
+**VOUT Pocket** es la app nativa que centraliza compromisos financieros, suscripciones y micro-gastos cotidianos con arquitectura fuera de línea y privacidad total:
+- ⚡ **Saldo Disponible ("Safe to Spend"):** Cálculo en tiempo real de `Ingreso Neto Mensual - Gastos Fijos y Suscripciones`, indicando con exactitud el capital libre disponible.
+- 🔁 **Gestor de Suscripciones & Servicios:** Monitoreo de streaming (Netflix, Spotify, etc.), membresías y servicios con recordatorio de fecha de vencimiento y toggle de pago en 1 toque.
+- ☕ **Teclado Rápido de Micro-gastos:** Pad numérico 3x4 personalizado para registrar gastos pequeños (café, transporte, snacks) en menos de 2 segundos.
+- 📳 **Shake-to-Update:** Gesto calibrado por acelerómetro de sacudida física para comprobar e instalar actualizaciones en caliente (OTA).
+- 🎨 **Fuente de Verdad del Diseño VOUT:** Canvas negro obsidiana (`#0A0E14`), tarjetas `#121824`, acento Cyber-Lime (`#C6F827`) y 7 temas de alto contraste compartidos por todo el ecosistema web.
+- ⚖️ **Marco Legal & Privacidad:** Modal legal nativo integrado con Términos de Servicio, Política de Privacidad (GDPR) y Política de Almacenamiento Local (AsyncStorage).
 
 ---
 
-## 🛠️ Stack
+## 🛠️ Stack Tecnológico
 
 `React Native 0.88` • `Expo SDK 58` • `TypeScript` • `NativeWind v4` • `Tailwind CSS` • `AsyncStorage` • `EAS Build (Standalone APK)`
 
 ---
 
-## 🚀 Quickstart
+## ⚙️ Operación & Mantenimiento Interno
 
 ```bash
-# Clone and enter directory
-git clone https://github.com/AgustinMilesi/expenses.git
-cd expenses
+# Verificación de compilación y tipado TypeScript
+npm run typecheck
 
-# Install dependencies & start
-npm install
+# Iniciar servidor de desarrollo Metro / Expo
 npm run start
 ```
 
 ---
 
-### ⚡ The VOUT Software Ecosystem
-- [💳 VOUT Retail](https://github.com/AgustinMilesi/retail) — Cloud point of sale, atomic stock control, and cash drawer audits.
-- [📥 VOUT Inbox](https://github.com/AgustinMilesi/inbox) — Multi-tenant customer feedback & embeddable forms.
-- [🚢 VOUT Cargo](https://github.com/AgustinMilesi/cargo) — Freight forwarding & customs tracking operating system.
-- [📬 VOUT Connect](https://github.com/AgustinMilesi/contact) — High-conversion contact portal with anti-spam protection.
+<div align="center">
+  <p>© 2026 VOUT Pocket · Flagship Mobile Financial Design System.</p>
+</div>

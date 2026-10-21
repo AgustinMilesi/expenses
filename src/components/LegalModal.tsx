@@ -38,30 +38,30 @@ export const LegalModal: React.FC<LegalModalProps> = ({
           subtitle: isEs ? 'Acuerdo de Usuario y Operaciones' : 'User Agreement & Operations',
           body: isEs
             ? `1. ACEPTACIÓN DE LOS TÉRMINOS
-Al acceder y utilizar la aplicación móvil PocketWallet, usted acepta quedar vinculado por estos Términos de Servicio. Si no está de acuerdo, por favor desinstale la aplicación.
+Al acceder y utilizar la aplicación móvil VOUT Pocket, usted acepta quedar vinculado por estos Términos de Servicio. Si no está de acuerdo, por favor desinstale la aplicación.
 
 2. NATURALEZA DEL SERVICIO
-PocketWallet opera como un gestor financiero personal, control de presupuestos y simulador de transferencias y tarjetas. La aplicación funciona con persistencia local fuera de línea (Offline-First) mediante almacenamiento encriptado seguro en su dispositivo.
+VOUT Pocket opera como un gestor financiero personal, control de presupuestos y simulador de transferencias y tarjetas. La aplicación funciona con persistencia local fuera de línea (Offline-First) mediante almacenamiento encriptado seguro en su dispositivo.
 
 3. RESPONSABILIDAD DEL USUARIO
 Usted es el único responsable de la exactitud de los montos, límites de transferencia y categorías ingresadas. Mantenga su dispositivo protegido mediante biometría o clave de acceso.
 
 4. DERECHOS DE PROPIEDAD INTELECTUAL
-El diseño visual, interfaz en tonos chartreuse/lime neón, tipografía, lógica de cálculo y código fuente son propiedad exclusiva de PocketWallet. Se prohíbe la reproducción o explotación comercial no autorizada.
+El diseño visual, interfaz en tonos chartreuse/lime neón, tipografía, lógica de cálculo y código fuente son propiedad exclusiva de VOUT. Se prohíbe la reproducción o explotación comercial no autorizada.
 
 5. MODIFICACIONES
 Nos reservamos el derecho de actualizar estos términos en cualquier momento. Las actualizaciones se notificarán dentro de la aplicación.`
             : `1. ACCEPTANCE OF TERMS
-By accessing and using PocketWallet mobile application, you agree to be bound by these Terms of Service. If you do not agree, please discontinue using the application.
+By accessing and using VOUT Pocket mobile application, you agree to be bound by these Terms of Service. If you do not agree, please discontinue using the application.
 
 2. SERVICE NATURE
-PocketWallet functions as a personal finance tracker, budget manager, and card & transfer simulator. It utilizes an offline-first architecture storing data securely on your local device.
+VOUT Pocket functions as a personal finance tracker, budget manager, and card & transfer simulator. It utilizes an offline-first architecture storing data securely on your local device.
 
 3. USER RESPONSIBILITIES
 You are solely responsible for verifying amounts, transfer limits, and transaction entries. Please ensure your device is secured via biometric or passcode lock.
 
 4. INTELLECTUAL PROPERTY
-The unique visual design, neon-lime aesthetic, typography, calculation engines, and source code are the proprietary property of PocketWallet.
+The unique visual design, neon-lime aesthetic, typography, calculation engines, and source code are the proprietary property of VOUT.
 
 5. CHANGES TO TERMS
 We reserve the right to revise these terms at any time. Continued use of the application constitutes acceptance of updated terms.`,
@@ -72,7 +72,7 @@ We reserve the right to revise these terms at any time. Continued use of the app
           subtitle: isEs ? 'Protección y Tratamiento de Datos' : 'Data Protection & Privacy',
           body: isEs
             ? `1. PRIVACIDAD POR DISEÑO
-En PocketWallet creemos firmemente que sus finanzas son privadas. La aplicación no vende ni comparte su información personal o saldos financieros con anunciantes ni terceros.
+En VOUT Pocket creemos firmemente que sus finanzas son privadas. La aplicación no vende ni comparte su información personal o saldos financieros con anunciantes ni terceros.
 
 2. ALMACENAMIENTO DE DATOS
 Todos los balances, transacciones, tarjetas y preferencias se almacenan localmente en su dispositivo mediante AsyncStorage y almacenamiento en espacio seguro de la aplicación.
@@ -83,7 +83,7 @@ Usted tiene derecho en todo momento a exportar, editar o eliminar completamente 
 4. SEGURIDAD
 Aplicamos principios de reducción al mínimo de datos y encriptación local para asegurar que nadie pueda acceder a su información sin acceso físico a su dispositivo desbloqueado.`
             : `1. PRIVACY BY DESIGN
-PocketWallet is designed with user privacy as a core tenet. We do not sell, rent, or monetize your financial logs, budgets, or personal transaction history.
+VOUT Pocket is designed with user privacy as a core tenet. We do not sell, rent, or monetize your financial logs, budgets, or personal transaction history.
 
 2. DATA STORAGE
 All balances, transactions, payment cards, and user configurations are persisted locally on your device using encrypted sandbox storage.
@@ -100,7 +100,7 @@ We adhere to data minimization principles ensuring that no sensitive credentials
           subtitle: isEs ? 'Uso de AsyncStorage y Preferencias' : 'AsyncStorage & Local Caching',
           body: isEs
             ? `1. USO DE ALMACENAMIENTO LOCAL
-En entornos móviles, PocketWallet no utiliza cookies web de rastreo publicitario. En su lugar, emplea almacenamiento de claves y valores (AsyncStorage) para guardar:
+En entornos móviles, VOUT Pocket no utiliza cookies web de rastreo publicitario. En su lugar, emplea almacenamiento de claves y valores (AsyncStorage) para guardar:
 - Sus preferencias de tema (modo oscuro / claro y color de acento).
 - Su divisa seleccionada (ARS, USD, EUR, CNY, BRL).
 - Su idioma preferido (español, inglés, portugués, chino).
@@ -109,7 +109,7 @@ En entornos móviles, PocketWallet no utiliza cookies web de rastreo publicitari
 2. BORRADO DE DATOS
 Puede restablecer o eliminar este almacenamiento en cualquier momento a través de la configuración de la aplicación o del sistema operativo.`
             : `1. LOCAL STORAGE MECHANISM
-In our native mobile environment, PocketWallet does not use third-party tracking web cookies. Instead, secure key-value AsyncStorage is utilized solely to remember:
+In our native mobile environment, VOUT Pocket does not use third-party tracking web cookies. Instead, secure key-value AsyncStorage is utilized solely to remember:
 - Theme settings (dark/light mode and chosen accent palette).
 - Selected currency (USD, ARS, EUR, CNY, BRL).
 - Interface language preference.
