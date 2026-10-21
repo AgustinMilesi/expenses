@@ -183,9 +183,18 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({
           </View>
 
           {/* Subtitle with Income & Committed Breakdown */}
-          <Text style={[styles.heroBreakdownText, { color: 'rgba(12, 16, 8, 0.75)' }]}>
-            {t.monthlyIncome}: {formatCurrency(budget.monthlyIncome, currency)} • {t.totalCommitted}: {formatCurrency(totals.total, currency)}
-          </Text>
+          <TouchableOpacity
+            onPress={onOpenEditIncome}
+            activeOpacity={0.7}
+          >
+            <Text style={[styles.heroBreakdownText, { color: 'rgba(12, 16, 8, 0.75)' }]}>
+              {budget.monthlyIncome === 0
+                ? (locale === 'es'
+                    ? '⚡ Tocá acá para definir tu ingreso mensual'
+                    : '⚡ Tap here to define your monthly income')
+                : `${t.monthlyIncome}: ${formatCurrency(budget.monthlyIncome, currency)} • ${t.totalCommitted}: ${formatCurrency(totals.total, currency)}`}
+            </Text>
+          </TouchableOpacity>
 
           {/* 4 Action Buttons inside Lime Card */}
           <View style={styles.heroActionsRow}>
@@ -301,8 +310,24 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({
               <Ionicons name="add" size={22} color={colors.lime} />
             </TouchableOpacity>
 
-            {/* Subscription Pills */}
-            {subscriptions.map((sub) => (
+            {subscriptions.length === 0 ? (
+              <TouchableOpacity
+                onPress={onAddSubscription}
+                activeOpacity={0.8}
+                style={[
+                  styles.emptySubPill,
+                  { backgroundColor: colors.card, borderColor: colors.cardBorder },
+                ]}
+              >
+                <Ionicons name="repeat-outline" size={16} color={colors.lime} />
+                <Text style={[styles.emptySubText, { color: colors.textMuted }]}>
+                  {locale === 'es'
+                    ? 'Sin suscripciones aún. Tocá (+) para agregar.'
+                    : 'No subscriptions yet. Tap (+) to add.'}
+                </Text>
+              </TouchableOpacity>
+            ) : (
+              subscriptions.map((sub) => (
               <TouchableOpacity
                 key={sub.id}
                 onPress={() => onTogglePaid(sub.id)}
@@ -338,7 +363,7 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({
                   />
                 </View>
               </TouchableOpacity>
-            ))}
+            )))}
           </ScrollView>
         </View>
 
@@ -631,6 +656,18 @@ const styles = StyleSheet.create({
     borderStyle: 'dashed',
     justifyContent: 'center',
     alignItems: 'center',
+  },
+  emptySubPill: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+    paddingHorizontal: 14,
+    paddingVertical: 14,
+    borderRadius: 20,
+    borderWidth: 1,
+  },
+  emptySubText: {
+    fontSize: 12,
   },
   subCard: {
     flexDirection: 'row',

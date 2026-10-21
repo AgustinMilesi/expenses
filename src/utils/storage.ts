@@ -6,9 +6,9 @@ import {
   UserPreferences,
 } from '../types/expense';
 
-const PREFS_STORAGE_KEY = '@pocket_preferences_v4';
-const BUDGET_STORAGE_KEY = '@pocket_budget_v4';
-const EXPENSES_STORAGE_KEY = '@pocket_expenses_v4';
+const PREFS_STORAGE_KEY = '@pocket_preferences_v5';
+const BUDGET_STORAGE_KEY = '@pocket_budget_v5_live';
+const EXPENSES_STORAGE_KEY = '@pocket_expenses_v5_live';
 
 export const DEFAULT_PREFERENCES: UserPreferences = {
   theme: 'dark',
@@ -19,141 +19,30 @@ export const DEFAULT_PREFERENCES: UserPreferences = {
   shakeSensitivity: 'firm',
 };
 
+// 100% clean operational initial budget: starts at 0 until user inputs their actual income
 export const DEFAULT_BUDGET: MonthlyBudget = {
-  month: '2026-10',
-  monthlyIncome: 2500,
+  month: new Date().toISOString().slice(0, 7),
+  monthlyIncome: 0,
   currency: 'USD',
-  savingsGoal: 500,
+  savingsGoal: 0,
 };
 
-// Initial realistic expenses representing subscriptions, fixed bills, and microgastos
-export const INITIAL_EXPENSES: ExpenseItem[] = [
-  // Suscripciones
-  {
-    id: 'sub-1',
-    title: 'Netflix 4K',
-    amount: 19.99,
-    category: 'subscription',
-    dueDate: 8,
-    isPaid: true,
-    notes: 'Streaming familiar',
-    iconName: 'film-outline',
-    color: '#E50914',
-    createdAt: '2026-10-01',
-  },
-  {
-    id: 'sub-2',
-    title: 'Spotify Premium',
-    amount: 11.99,
-    category: 'subscription',
-    dueDate: 14,
-    isPaid: true,
-    notes: 'Música sin anuncios',
-    iconName: 'musical-notes-outline',
-    color: '#1DB954',
-    createdAt: '2026-10-02',
-  },
-  {
-    id: 'sub-3',
-    title: 'Gimnasio & Crossfit',
-    amount: 45.0,
-    category: 'subscription',
-    dueDate: 10,
-    isPaid: true,
-    notes: 'Membresía pase libre',
-    iconName: 'barbell-outline',
-    color: '#10B981',
-    createdAt: '2026-10-02',
-  },
-  {
-    id: 'sub-4',
-    title: 'iCloud / Google One',
-    amount: 9.99,
-    category: 'subscription',
-    dueDate: 20,
-    isPaid: false,
-    notes: 'Almacenamiento 2TB',
-    iconName: 'cloud-outline',
-    color: '#6366F1',
-    createdAt: '2026-10-03',
-  },
+// 100% clean operational expenses list: zero mock, zero sample, zero dummy numbers
+export const INITIAL_EXPENSES: ExpenseItem[] = [];
 
-  // Fijos
-  {
-    id: 'fix-1',
-    title: 'Alquiler Departamento',
-    amount: 650.0,
-    category: 'fixed',
-    dueDate: 5,
-    isPaid: true,
-    notes: 'Transferencia mensual',
-    iconName: 'home-outline',
-    color: '#3B82F6',
-    createdAt: '2026-10-01',
-  },
-  {
-    id: 'fix-2',
-    title: 'Internet Fibra 500MB',
-    amount: 35.0,
-    category: 'fixed',
-    dueDate: 15,
-    isPaid: false,
-    notes: 'Conexión simétrica',
-    iconName: 'wifi-outline',
-    color: '#06B6D4',
-    createdAt: '2026-10-02',
-  },
-  {
-    id: 'fix-3',
-    title: 'Luz y Electricidad',
-    amount: 42.0,
-    category: 'fixed',
-    dueDate: 22,
-    isPaid: false,
-    notes: 'Factura mensual',
-    iconName: 'flash-outline',
-    color: '#F59E0B',
-    createdAt: '2026-10-04',
-  },
-
-  // Microgastos
-  {
-    id: 'mic-1',
-    title: 'Café de Especialidad',
-    amount: 4.5,
-    category: 'micro',
-    dueDate: 20,
-    isPaid: true,
-    notes: 'Cafetería de paso',
-    iconName: 'cafe-outline',
-    color: '#C6F827',
-    createdAt: '2026-10-20',
-  },
-  {
-    id: 'mic-2',
-    title: 'Kiosco / Snacks',
-    amount: 3.2,
-    category: 'micro',
-    dueDate: 20,
-    isPaid: true,
-    notes: 'Golosinas y agua',
-    iconName: 'fast-food-outline',
-    color: '#F43F5E',
-    createdAt: '2026-10-20',
-  },
-  {
-    id: 'mic-3',
-    title: 'Taxi / Uber Corto',
-    amount: 8.5,
-    category: 'micro',
-    dueDate: 19,
-    isPaid: true,
-    notes: 'Regreso a casa',
-    iconName: 'car-outline',
-    color: '#06B6D4',
-    createdAt: '2026-10-19',
-  },
-];
+// Migration / Purge: remove any old mock or sample storage keys from previous builds
+export async function purgeLegacyMockData(): Promise<void> {
+  try {
+    await AsyncStorage.multiRemove([
+      '@pocket_expenses_v4',
+      '@pocket_expenses_v3',
+      '@pocket_budget_v4',
+      '@pocket_wallet_state',
+    ]);
+  } catch (err) {
+    // safe ignore
+  }
+}
 
 // Preferences
 export async function loadPreferences(): Promise<UserPreferences> {
@@ -179,9 +68,15 @@ export async function savePreferences(prefs: UserPreferences): Promise<void> {
 // Budget
 export async function loadBudget(): Promise<MonthlyBudget> {
   try {
+    await purgeLegacyMockData();
     const raw = await AsyncStorage.getItem(BUDGET_STORAGE_KEY);
     if (raw) {
-      return JSON.parse(raw);
+      const parsed: MonthlyBudget = JSON.parse(raw);
+      // If user had the 2500 sample default, reset to clean 0
+      if (parsed.monthlyIncome === 2500 && parsed.savingsGoal === 500) {
+        return DEFAULT_BUDGET;
+      }
+      return parsed;
     }
   } catch (err) {
     console.warn('Error loading budget:', err);
@@ -200,14 +95,24 @@ export async function saveBudget(budget: MonthlyBudget): Promise<void> {
 // Expenses
 export async function loadExpenses(): Promise<ExpenseItem[]> {
   try {
+    await purgeLegacyMockData();
     const raw = await AsyncStorage.getItem(EXPENSES_STORAGE_KEY);
     if (raw) {
-      return JSON.parse(raw);
+      const parsed: ExpenseItem[] = JSON.parse(raw);
+      // Clean out any leftover dummy items that may have been stored in previous tests
+      const cleaned = parsed.filter(
+        (item) =>
+          !['sub-1', 'sub-2', 'sub-3', 'sub-4', 'fix-1', 'fix-2', 'fix-3', 'mic-1', 'mic-2', 'mic-3'].includes(item.id)
+      );
+      if (cleaned.length !== parsed.length) {
+        await saveExpenses(cleaned);
+      }
+      return cleaned;
     }
   } catch (err) {
     console.warn('Error loading expenses:', err);
   }
-  return INITIAL_EXPENSES;
+  return [];
 }
 
 export async function saveExpenses(expenses: ExpenseItem[]): Promise<void> {

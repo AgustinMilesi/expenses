@@ -175,54 +175,64 @@ export const SubscriptionsScreen: React.FC<SubscriptionsScreenProps> = ({
             {t.subscription} ({subs.length})
           </Text>
 
-          {subs.map((sub) => (
-            <View
-              key={sub.id}
-              style={[
-                styles.subItem,
-                {
-                  backgroundColor: colors.card,
-                  borderColor: sub.isPaid ? colors.cardBorder : colors.danger,
-                },
-              ]}
-            >
-              <View style={styles.subLeft}>
-                <View style={[styles.subIcon, { backgroundColor: colors.cardLight }]}>
-                  <Ionicons name="film-outline" size={18} color={colors.lime} />
+          {subs.length === 0 ? (
+            <View style={[styles.emptyBox, { backgroundColor: colors.card, borderColor: colors.cardBorder }]}>
+              <Ionicons name="repeat-outline" size={26} color={colors.textDim} />
+              <Text style={[styles.emptyTitle, { color: colors.text }]}>Sin suscripciones</Text>
+              <Text style={[styles.emptyDesc, { color: colors.textMuted }]}>
+                Tocá "+ Agregar Suscripción" abajo para registrar tus servicios recurrentes.
+              </Text>
+            </View>
+          ) : (
+            subs.map((sub) => (
+              <View
+                key={sub.id}
+                style={[
+                  styles.subItem,
+                  {
+                    backgroundColor: colors.card,
+                    borderColor: sub.isPaid ? colors.cardBorder : colors.danger,
+                  },
+                ]}
+              >
+                <View style={styles.subLeft}>
+                  <View style={[styles.subIcon, { backgroundColor: colors.cardLight }]}>
+                    <Ionicons name="film-outline" size={18} color={colors.lime} />
+                  </View>
+                  <View>
+                    <Text style={[styles.subTitle, { color: colors.text }]}>{sub.title}</Text>
+                    <Text style={[styles.subInfo, { color: colors.textDim }]}>
+                      {t.dueDay(sub.dueDate)} • {sub.notes || 'Suscripción mensual'}
+                    </Text>
+                  </View>
                 </View>
-                <View>
-                  <Text style={[styles.subTitle, { color: colors.text }]}>{sub.title}</Text>
-                  <Text style={[styles.subInfo, { color: colors.textDim }]}>
-                    {t.dueDay(sub.dueDate)} • {sub.notes || 'Suscripción mensual'}
-                  </Text>
-                </View>
-              </View>
 
-              <View style={styles.subRight}>
-                <Text style={[styles.subAmount, { color: colors.text }]}>
-                  {formatCurrency(sub.amount, currency)}
-                </Text>
-                <TouchableOpacity
-                  onPress={() => onTogglePaid(sub.id)}
-                  style={[
-                    styles.toggleBtn,
-                    {
-                      backgroundColor: sub.isPaid ? colors.lime : colors.cardLight,
-                    },
-                  ]}
-                >
-                  <Text
+                <View style={styles.subRight}>
+                  <Text style={[styles.subAmount, { color: colors.text }]}>
+                    {formatCurrency(sub.amount, currency)}
+                  </Text>
+                  <TouchableOpacity
+                    onPress={() => onTogglePaid(sub.id)}
                     style={[
-                      styles.toggleBtnText,
-                      { color: sub.isPaid ? colors.limeText : colors.textMuted },
+                      styles.toggleBtn,
+                      {
+                        backgroundColor: sub.isPaid ? colors.lime : colors.cardLight,
+                      },
                     ]}
                   >
-                    {sub.isPaid ? t.paid : t.pending}
-                  </Text>
-                </TouchableOpacity>
+                    <Text
+                      style={[
+                        styles.toggleBtnText,
+                        { color: sub.isPaid ? colors.limeText : colors.textMuted },
+                      ]}
+                    >
+                      {sub.isPaid ? t.paid : t.pending}
+                    </Text>
+                  </TouchableOpacity>
+                </View>
               </View>
-            </View>
-          ))}
+            ))
+          )}
         </View>
 
         {/* Fixed Bills List */}
@@ -231,54 +241,64 @@ export const SubscriptionsScreen: React.FC<SubscriptionsScreenProps> = ({
             {t.fixed} ({fixed.length})
           </Text>
 
-          {fixed.map((fix) => (
-            <View
-              key={fix.id}
-              style={[
-                styles.subItem,
-                {
-                  backgroundColor: colors.card,
-                  borderColor: fix.isPaid ? colors.cardBorder : colors.danger,
-                },
-              ]}
-            >
-              <View style={styles.subLeft}>
-                <View style={[styles.subIcon, { backgroundColor: colors.cardLight }]}>
-                  <Ionicons name="flash-outline" size={18} color="#3B82F6" />
+          {fixed.length === 0 ? (
+            <View style={[styles.emptyBox, { backgroundColor: colors.card, borderColor: colors.cardBorder }]}>
+              <Ionicons name="home-outline" size={26} color={colors.textDim} />
+              <Text style={[styles.emptyTitle, { color: colors.text }]}>Sin gastos fijos</Text>
+              <Text style={[styles.emptyDesc, { color: colors.textMuted }]}>
+                Registrá gastos del hogar como alquiler, luz o internet.
+              </Text>
+            </View>
+          ) : (
+            fixed.map((fix) => (
+              <View
+                key={fix.id}
+                style={[
+                  styles.subItem,
+                  {
+                    backgroundColor: colors.card,
+                    borderColor: fix.isPaid ? colors.cardBorder : colors.danger,
+                  },
+                ]}
+              >
+                <View style={styles.subLeft}>
+                  <View style={[styles.subIcon, { backgroundColor: colors.cardLight }]}>
+                    <Ionicons name="flash-outline" size={18} color="#3B82F6" />
+                  </View>
+                  <View>
+                    <Text style={[styles.subTitle, { color: colors.text }]}>{fix.title}</Text>
+                    <Text style={[styles.subInfo, { color: colors.textDim }]}>
+                      {t.dueDay(fix.dueDate)} • {fix.notes || 'Gasto fijo'}
+                    </Text>
+                  </View>
                 </View>
-                <View>
-                  <Text style={[styles.subTitle, { color: colors.text }]}>{fix.title}</Text>
-                  <Text style={[styles.subInfo, { color: colors.textDim }]}>
-                    {t.dueDay(fix.dueDate)} • {fix.notes || 'Gasto fijo'}
-                  </Text>
-                </View>
-              </View>
 
-              <View style={styles.subRight}>
-                <Text style={[styles.subAmount, { color: colors.text }]}>
-                  {formatCurrency(fix.amount, currency)}
-                </Text>
-                <TouchableOpacity
-                  onPress={() => onTogglePaid(fix.id)}
-                  style={[
-                    styles.toggleBtn,
-                    {
-                      backgroundColor: fix.isPaid ? colors.lime : colors.cardLight,
-                    },
-                  ]}
-                >
-                  <Text
+                <View style={styles.subRight}>
+                  <Text style={[styles.subAmount, { color: colors.text }]}>
+                    {formatCurrency(fix.amount, currency)}
+                  </Text>
+                  <TouchableOpacity
+                    onPress={() => onTogglePaid(fix.id)}
                     style={[
-                      styles.toggleBtnText,
-                      { color: fix.isPaid ? colors.limeText : colors.textMuted },
+                      styles.toggleBtn,
+                      {
+                        backgroundColor: fix.isPaid ? colors.lime : colors.cardLight,
+                      },
                     ]}
                   >
-                    {fix.isPaid ? t.paid : t.pending}
-                  </Text>
-                </TouchableOpacity>
+                    <Text
+                      style={[
+                        styles.toggleBtnText,
+                        { color: fix.isPaid ? colors.limeText : colors.textMuted },
+                      ]}
+                    >
+                      {fix.isPaid ? t.paid : t.pending}
+                    </Text>
+                  </TouchableOpacity>
+                </View>
               </View>
-            </View>
-          ))}
+            ))
+          )}
         </View>
 
         {/* Add Subscription Button */}
@@ -486,5 +506,22 @@ const styles = StyleSheet.create({
   addBtnText: {
     fontSize: 15,
     fontWeight: '900',
+  },
+  emptyBox: {
+    borderRadius: 20,
+    borderWidth: 1,
+    padding: 22,
+    alignItems: 'center',
+    gap: 6,
+    marginBottom: 8,
+  },
+  emptyTitle: {
+    fontSize: 14,
+    fontWeight: '800',
+    marginTop: 4,
+  },
+  emptyDesc: {
+    fontSize: 12,
+    textAlign: 'center',
   },
 });

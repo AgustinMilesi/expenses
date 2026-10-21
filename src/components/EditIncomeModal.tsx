@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   View,
   Text,
@@ -35,6 +35,13 @@ export const EditIncomeModal: React.FC<EditIncomeModalProps> = ({
   const t = getTranslations(locale);
   const [income, setIncome] = useState(currentIncome > 0 ? currentIncome.toString() : '');
   const [error, setError] = useState('');
+
+  useEffect(() => {
+    if (visible) {
+      setIncome(currentIncome > 0 ? currentIncome.toString() : '');
+      setError('');
+    }
+  }, [visible, currentIncome]);
 
   const handleSave = () => {
     const parsed = parseFloat(income);
