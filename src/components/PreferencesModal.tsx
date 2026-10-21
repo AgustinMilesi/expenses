@@ -13,6 +13,7 @@ import {
   AppLocale,
   AppTheme,
   Currency,
+  ShakeSensitivity,
 } from '../types/expense';
 import { ACCENT_PALETTES, ThemeColors } from '../utils/theme';
 import { getTranslations, LOCALES } from '../utils/i18n';
@@ -31,6 +32,8 @@ interface PreferencesModalProps {
   onSelectCurrency: (currency: Currency) => void;
   shakeToUpdate: boolean;
   onToggleShakeToUpdate: (enabled: boolean) => void;
+  shakeSensitivity: ShakeSensitivity;
+  onSelectShakeSensitivity: (sensitivity: ShakeSensitivity) => void;
   onCheckUpdates: () => void;
   onOpenLegal: (type: 'terms' | 'privacy' | 'cookies') => void;
   colors: ThemeColors;
@@ -49,6 +52,8 @@ export const PreferencesModal: React.FC<PreferencesModalProps> = ({
   onSelectCurrency,
   shakeToUpdate,
   onToggleShakeToUpdate,
+  shakeSensitivity,
+  onSelectShakeSensitivity,
   onCheckUpdates,
   onOpenLegal,
   colors,
@@ -384,6 +389,55 @@ export const PreferencesModal: React.FC<PreferencesModalProps> = ({
                     </Text>
                   </View>
                 </TouchableOpacity>
+
+                {/* Shake Sensitivity Level Selector */}
+                {shakeToUpdate && (
+                  <View style={styles.sensitivityContainer}>
+                    <Text style={[styles.sensitivityLabel, { color: colors.textMuted }]}>
+                      {t.shakeSensitivity}:
+                    </Text>
+                    <View style={styles.sensitivityRow}>
+                      {(['firm', 'medium', 'gentle'] as ShakeSensitivity[]).map((sens) => {
+                        const isSelected = shakeSensitivity === sens;
+                        const label =
+                          sens === 'firm'
+                            ? t.sensitivityFirm
+                            : sens === 'medium'
+                            ? t.sensitivityMedium
+                            : t.sensitivityGentle;
+                        return (
+                          <TouchableOpacity
+                            key={sens}
+                            onPress={() => onSelectShakeSensitivity(sens)}
+                            activeOpacity={0.8}
+                            style={[
+                              styles.sensBtn,
+                              {
+                                backgroundColor: isSelected ? colors.lime : colors.card,
+                                borderColor: isSelected ? colors.lime : colors.cardBorder,
+                              },
+                            ]}
+                          >
+                            <Text
+                              style={[
+                                styles.sensBtnText,
+                                {
+                                  color: isSelected ? colors.limeText : colors.textDim,
+                                  fontWeight: isSelected ? '800' : '600',
+                                },
+                              ]}
+                            >
+                              {label}
+                            </Text>
+                          </TouchableOpacity>
+                        );
+                      })}
+                    </View>
+                    <Text style={[styles.sensitivityHint, { color: colors.textDim }]}>
+                      {t.sensitivityDesc}
+                    </Text>
+                  </View>
+                )}
               </View>
             </View>
 
@@ -689,6 +743,40 @@ const styles = StyleSheet.create({
   togglePillText: {
     fontSize: 11,
     fontWeight: '800',
+  },
+  sensitivityContainer: {
+    marginTop: 12,
+    paddingTop: 10,
+    borderTopWidth: 1,
+    borderTopColor: 'rgba(150, 150, 150, 0.15)',
+  },
+  sensitivityLabel: {
+    fontSize: 11,
+    fontWeight: '700',
+    marginBottom: 8,
+    textTransform: 'uppercase',
+    letterSpacing: 0.5,
+  },
+  sensitivityRow: {
+    flexDirection: 'row',
+    gap: 8,
+  },
+  sensBtn: {
+    flex: 1,
+    paddingVertical: 8,
+    paddingHorizontal: 4,
+    borderRadius: 10,
+    borderWidth: 1,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  sensBtnText: {
+    fontSize: 11,
+  },
+  sensitivityHint: {
+    fontSize: 10,
+    marginTop: 6,
+    lineHeight: 14,
   },
   footerSection: {
     marginTop: 10,

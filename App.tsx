@@ -12,6 +12,7 @@ import {
   ExpenseCategory,
   ExpenseItem,
   MonthlyBudget,
+  ShakeSensitivity,
 } from './src/types/expense';
 import {
   loadBudget,
@@ -54,6 +55,7 @@ export default function App() {
   const [locale, setLocale] = useState<AppLocale>('es');
   const [currency, setCurrency] = useState<Currency>('USD');
   const [shakeToUpdate, setShakeToUpdate] = useState<boolean>(true);
+  const [shakeSensitivity, setShakeSensitivity] = useState<ShakeSensitivity>('firm');
 
   // Updates Modal
   const [isUpdateModalOpen, setIsUpdateModalOpen] = useState(false);
@@ -83,7 +85,7 @@ export default function App() {
   // Hardware accelerometer listener for vigorous shake gestures
   useShakeToUpdate(() => {
     handleTriggerUpdate('shake');
-  }, { enabled: shakeToUpdate });
+  }, { enabled: shakeToUpdate, sensitivity: shakeSensitivity });
 
   // Load Persisted Data on Startup
   useEffect(() => {
@@ -100,6 +102,7 @@ export default function App() {
         setLocale(loadedPrefs.locale);
         setCurrency(loadedPrefs.currency);
         setShakeToUpdate(loadedPrefs.shakeToUpdate !== false);
+        setShakeSensitivity(loadedPrefs.shakeSensitivity || 'firm');
 
         setBudget({
           ...loadedBudget,
@@ -118,17 +121,17 @@ export default function App() {
   // Preference Handlers
   const handleSelectTheme = async (newTheme: AppTheme) => {
     setTheme(newTheme);
-    await savePreferences({ theme: newTheme, accent, locale, currency, shakeToUpdate });
+    await savePreferences({ theme: newTheme, accent, locale, currency, shakeToUpdate, shakeSensitivity });
   };
 
   const handleSelectAccent = async (newAccent: AccentTheme) => {
     setAccent(newAccent);
-    await savePreferences({ theme, accent: newAccent, locale, currency, shakeToUpdate });
+    await savePreferences({ theme, accent: newAccent, locale, currency, shakeToUpdate, shakeSensitivity });
   };
 
   const handleSelectLocale = async (newLocale: AppLocale) => {
     setLocale(newLocale);
-    await savePreferences({ theme, accent, locale: newLocale, currency, shakeToUpdate });
+    await savePreferences({ theme, accent, locale: newLocale, currency, shakeToUpdate, shakeSensitivity });
   };
 
   const handleSelectCurrency = async (newCurrency: Currency) => {
@@ -136,14 +139,19 @@ export default function App() {
     const updatedBudget = { ...budget, currency: newCurrency };
     setBudget(updatedBudget);
     await Promise.all([
-      savePreferences({ theme, accent, locale, currency: newCurrency, shakeToUpdate }),
+      savePreferences({ theme, accent, locale, currency: newCurrency, shakeToUpdate, shakeSensitivity }),
       saveBudget(updatedBudget),
     ]);
   };
 
   const handleToggleShakeToUpdate = async (enabled: boolean) => {
     setShakeToUpdate(enabled);
-    await savePreferences({ theme, accent, locale, currency, shakeToUpdate: enabled });
+    await savePreferences({ theme, accent, locale, currency, shakeToUpdate: enabled, shakeSensitivity });
+  };
+
+  const handleSelectShakeSensitivity = async (newSens: ShakeSensitivity) => {
+    setShakeSensitivity(newSens);
+    await savePreferences({ theme, accent, locale, currency, shakeToUpdate, shakeSensitivity: newSens });
   };
 
   // Expense Handlers
@@ -327,6 +335,8 @@ export default function App() {
           onSelectCurrency={handleSelectCurrency}
           shakeToUpdate={shakeToUpdate}
           onToggleShakeToUpdate={handleToggleShakeToUpdate}
+          shakeSensitivity={shakeSensitivity}
+          onSelectShakeSensitivity={handleSelectShakeSensitivity}
           onCheckUpdates={() => handleTriggerUpdate('manual')}
           onOpenLegal={(type) => {
             setIsPreferencesOpen(false);

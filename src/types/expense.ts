@@ -45,12 +45,15 @@ export interface QuickCategoryItem {
   iconName: string;
 }
 
+export type ShakeSensitivity = 'firm' | 'medium' | 'gentle';
+
 export interface UserPreferences {
   theme: AppTheme;
   accent: AccentTheme;
   locale: AppLocale;
   currency: Currency;
   shakeToUpdate?: boolean;
+  shakeSensitivity?: ShakeSensitivity;
 }
 
 export type CategoryFilter = 'all' | 'fixed' | 'subscription' | 'leisure' | 'micro';

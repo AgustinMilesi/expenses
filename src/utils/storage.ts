@@ -16,6 +16,7 @@ export const DEFAULT_PREFERENCES: UserPreferences = {
   locale: 'es',
   currency: 'USD',
   shakeToUpdate: true,
+  shakeSensitivity: 'firm',
 };
 
 export const DEFAULT_BUDGET: MonthlyBudget = {

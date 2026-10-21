@@ -104,6 +104,11 @@ export const TRANSLATIONS = {
     upToDate: 'Tu aplicación ya cuenta con la última versión disponible.',
     updateError: 'No se pudo conectar con el servidor de actualizaciones o estás en modo desarrollo.',
     restartNow: 'Reiniciar Ahora',
+    shakeSensitivity: 'Sensibilidad de Sacudida',
+    sensitivityFirm: 'Firme (Enérgica)',
+    sensitivityMedium: 'Media',
+    sensitivityGentle: 'Suave',
+    sensitivityDesc: 'Firme requiere sacudir con fuerza de ida y vuelta para evitar disparos por error.',
 
     // Navigation
     homeTab: 'Resumen',
@@ -229,6 +234,11 @@ export const TRANSLATIONS = {
     upToDate: 'Your app is already running the latest version.',
     updateError: 'Could not connect to update server or running in dev mode.',
     restartNow: 'Restart Now',
+    shakeSensitivity: 'Shake Sensitivity',
+    sensitivityFirm: 'Firm (Vigorous)',
+    sensitivityMedium: 'Medium',
+    sensitivityGentle: 'Gentle',
+    sensitivityDesc: 'Firm requires repeated vigorous shaking to avoid accidental triggers while walking.',
 
     // Navigation
     homeTab: 'Overview',
@@ -354,6 +364,11 @@ export const TRANSLATIONS = {
     upToDate: 'Seu app já está atualizado com a versão mais recente.',
     updateError: 'Não foi possível conectar ao servidor ou você está em modo dev.',
     restartNow: 'Reiniciar Agora',
+    shakeSensitivity: 'Sensibilidade do Gesto',
+    sensitivityFirm: 'Firme (Enérgica)',
+    sensitivityMedium: 'Média',
+    sensitivityGentle: 'Suave',
+    sensitivityDesc: 'Firme requer sacudir com força repetidas vezes para evitar acionamentos acidentais.',
 
     // Navigation
     homeTab: 'Resumo',
@@ -479,6 +494,11 @@ export const TRANSLATIONS = {
     upToDate: '您的应用程序已经是最新版本。',
     updateError: '无法连接到更新服务器或当前处于开发模式。',
     restartNow: '立即重启',
+    shakeSensitivity: '摇一摇灵敏度',
+    sensitivityFirm: '强力（推荐）',
+    sensitivityMedium: '中等',
+    sensitivityGentle: '轻柔',
+    sensitivityDesc: '强力模式需要连续用力晃动，彻底杜绝走路或拿手机时的误触。',
 
     // Navigation
     homeTab: '概览',
