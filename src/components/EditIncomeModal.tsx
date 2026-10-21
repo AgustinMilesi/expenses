@@ -9,39 +9,45 @@ import {
   Platform,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
-import { AppLocale, Currency } from '../types/expense';
+import { AppLocale, Currency, IncomeType } from '../types/expense';
 import { ThemeColors } from '../utils/theme';
 import { getTranslations } from '../utils/i18n';
 
 interface EditIncomeModalProps {
   visible: boolean;
   currentIncome: number;
+  currentIncomeType?: IncomeType;
   currency: Currency;
   locale: AppLocale;
   colors: ThemeColors;
   onClose: () => void;
-  onSave: (newIncome: number) => void;
+  onSave: (newIncome: number, incomeType: IncomeType) => void;
+  onTriggerReconciliation?: () => void;
 }
 
 export const EditIncomeModal: React.FC<EditIncomeModalProps> = ({
   visible,
   currentIncome,
+  currentIncomeType = 'fixed_salary',
   currency,
   locale,
   colors,
   onClose,
   onSave,
+  onTriggerReconciliation,
 }) => {
   const t = getTranslations(locale);
+  const [incomeType, setIncomeType] = useState<IncomeType>(currentIncomeType);
   const [income, setIncome] = useState(currentIncome > 0 ? currentIncome.toString() : '');
   const [error, setError] = useState('');
 
   useEffect(() => {
     if (visible) {
       setIncome(currentIncome > 0 ? currentIncome.toString() : '');
+      setIncomeType(currentIncomeType || 'fixed_salary');
       setError('');
     }
-  }, [visible, currentIncome]);
+  }, [visible, currentIncome, currentIncomeType]);
 
   const handleSave = () => {
     const parsed = parseFloat(income);
@@ -49,7 +55,7 @@ export const EditIncomeModal: React.FC<EditIncomeModalProps> = ({
       setError(locale === 'es' ? 'Ingresá un monto válido' : 'Please enter a valid amount');
       return;
     }
-    onSave(parsed);
+    onSave(parsed, incomeType);
     setError('');
     onClose();
   };
@@ -62,22 +68,22 @@ export const EditIncomeModal: React.FC<EditIncomeModalProps> = ({
           flex: 1,
           justifyContent: 'center',
           alignItems: 'center',
-          backgroundColor: 'rgba(0, 0, 0, 0.7)',
+          backgroundColor: 'rgba(0, 0, 0, 0.75)',
           paddingHorizontal: 20,
         }}
       >
         <View
           style={{
             width: '100%',
-            maxWidth: 380,
+            maxWidth: 390,
             backgroundColor: colors.card,
             borderRadius: 24,
             padding: 22,
             borderWidth: 1,
             borderColor: colors.cardBorder,
             shadowColor: '#000',
-            shadowOpacity: 0.25,
-            shadowRadius: 15,
+            shadowOpacity: 0.3,
+            shadowRadius: 18,
             elevation: 8,
           }}
         >
@@ -87,24 +93,144 @@ export const EditIncomeModal: React.FC<EditIncomeModalProps> = ({
               flexDirection: 'row',
               alignItems: 'center',
               justifyContent: 'space-between',
-              paddingBottom: 12,
+              paddingBottom: 14,
               borderBottomWidth: 1,
               borderBottomColor: colors.borderSubtle,
             }}
           >
-            <Text style={{ fontSize: 16, fontWeight: '900', color: colors.text }}>
-              {t.saveIncome}
-            </Text>
-            <TouchableOpacity onPress={onClose}>
+            <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
+              <View
+                style={{
+                  width: 32,
+                  height: 32,
+                  borderRadius: 10,
+                  backgroundColor: colors.limeGlow,
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                }}
+              >
+                <Ionicons name="wallet" size={17} color={colors.lime} />
+              </View>
+              <Text style={{ fontSize: 16, fontWeight: '900', color: colors.text }}>
+                {t.saveIncome}
+              </Text>
+            </View>
+            <TouchableOpacity onPress={onClose} style={{ padding: 4 }}>
               <Ionicons name="close" size={20} color={colors.textMuted} />
             </TouchableOpacity>
           </View>
 
-          <Text style={{ fontSize: 12, color: colors.textMuted, marginVertical: 12 }}>
-            {locale === 'es'
-              ? 'Definí tu ingreso mensual neto estimado para calcular tu saldo restante en tiempo real.'
-              : 'Set your estimated net monthly income to calculate remaining disposable balance.'}
-          </Text>
+          {/* Dual Mode Switcher Tabs */}
+          <View style={{ marginTop: 14, marginBottom: 12 }}>
+            <Text
+              style={{
+                fontSize: 10,
+                fontWeight: '800',
+                textTransform: 'uppercase',
+                letterSpacing: 0.8,
+                color: colors.textMuted,
+                marginBottom: 8,
+              }}
+            >
+              {locale === 'es' ? 'Tipo de ingreso mensual' : 'Income Model'}
+            </Text>
+
+            <View
+              style={{
+                flexDirection: 'row',
+                backgroundColor: colors.bg,
+                borderRadius: 14,
+                padding: 4,
+                borderWidth: 1,
+                borderColor: colors.cardBorder,
+                gap: 4,
+              }}
+            >
+              {/* Option 1: Sueldo Fijo */}
+              <TouchableOpacity
+                onPress={() => setIncomeType('fixed_salary')}
+                style={{
+                  flex: 1,
+                  paddingVertical: 9,
+                  paddingHorizontal: 8,
+                  borderRadius: 10,
+                  backgroundColor: incomeType === 'fixed_salary' ? colors.lime : 'transparent',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  flexDirection: 'row',
+                  gap: 5,
+                }}
+              >
+                <Ionicons
+                  name="calendar-outline"
+                  size={14}
+                  color={incomeType === 'fixed_salary' ? colors.limeText : colors.textMuted}
+                />
+                <Text
+                  style={{
+                    fontSize: 12,
+                    fontWeight: '800',
+                    color: incomeType === 'fixed_salary' ? colors.limeText : colors.textMuted,
+                  }}
+                >
+                  {locale === 'es' ? 'Sueldo Fijo' : 'Fixed Salary'}
+                </Text>
+              </TouchableOpacity>
+
+              {/* Option 2: Plata Inicial / Variable */}
+              <TouchableOpacity
+                onPress={() => setIncomeType('variable_start')}
+                style={{
+                  flex: 1,
+                  paddingVertical: 9,
+                  paddingHorizontal: 8,
+                  borderRadius: 10,
+                  backgroundColor: incomeType === 'variable_start' ? colors.lime : 'transparent',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  flexDirection: 'row',
+                  gap: 5,
+                }}
+              >
+                <Ionicons
+                  name="wallet-outline"
+                  size={14}
+                  color={incomeType === 'variable_start' ? colors.limeText : colors.textMuted}
+                />
+                <Text
+                  style={{
+                    fontSize: 12,
+                    fontWeight: '800',
+                    color: incomeType === 'variable_start' ? colors.limeText : colors.textMuted,
+                  }}
+                >
+                  {locale === 'es' ? 'Plata Inicial' : 'Starting Cash'}
+                </Text>
+              </TouchableOpacity>
+            </View>
+          </View>
+
+          {/* Mode Description Tip */}
+          <View
+            style={{
+              padding: 10,
+              backgroundColor: colors.bg,
+              borderRadius: 12,
+              borderWidth: 1,
+              borderColor: colors.cardBorder,
+              marginBottom: 14,
+            }}
+          >
+            <Text style={{ fontSize: 11, color: colors.textMuted, lineHeight: 16 }}>
+              {incomeType === 'fixed_salary'
+                ? (locale === 'es'
+                    ? '💼 Sueldo Fijo: Cobrás todos los meses lo mismo. Se renueva automáticamente al iniciar cada mes.'
+                    : '💼 Fixed Salary: You earn the same predictable amount every month. Auto-renews every month.')
+                : (locale === 'es'
+                    ? '⚡ Plata Inicial: Para ingresos variables o freelancers. Definí con cuánta plata en mano o banco arrancás este mes.'
+                    : '⚡ Starting Cash: For freelancers or variable earners. Sets the initial liquid cash you start this month with.')}
+            </Text>
+          </View>
 
           {error ? (
             <View
@@ -123,7 +249,8 @@ export const EditIncomeModal: React.FC<EditIncomeModalProps> = ({
             </View>
           ) : null}
 
-          <View style={{ marginBottom: 18 }}>
+          {/* Amount Input */}
+          <View style={{ marginBottom: 16 }}>
             <Text
               style={{
                 fontSize: 11,
@@ -134,7 +261,9 @@ export const EditIncomeModal: React.FC<EditIncomeModalProps> = ({
                 marginBottom: 6,
               }}
             >
-              {t.monthlyIncome} ({currency})
+              {incomeType === 'fixed_salary'
+                ? `${t.monthlyIncome} (${currency})`
+                : `${locale === 'es' ? 'Plata de inicio' : 'Starting balance'} (${currency})`}
             </Text>
             <TextInput
               value={income}
@@ -149,24 +278,48 @@ export const EditIncomeModal: React.FC<EditIncomeModalProps> = ({
               style={{
                 padding: 14,
                 borderRadius: 14,
-                backgroundColor: colors.inputBg,
+                backgroundColor: colors.bg,
                 borderWidth: 1,
-                borderColor: colors.inputBorder,
-                color: colors.text,
-                fontSize: 20,
+                borderColor: colors.cardBorder,
+                color: colors.lime,
+                fontSize: 22,
                 fontWeight: '900',
               }}
             />
           </View>
 
+          {/* Trigger Reconciliation Shortcut (Optional) */}
+          {onTriggerReconciliation && (
+            <TouchableOpacity
+              onPress={() => {
+                onClose();
+                onTriggerReconciliation();
+              }}
+              style={{
+                flexDirection: 'row',
+                alignItems: 'center',
+                justifyContent: 'center',
+                gap: 6,
+                paddingVertical: 8,
+                marginBottom: 14,
+              }}
+            >
+              <Ionicons name="refresh-circle-outline" size={16} color={colors.lime} />
+              <Text style={{ fontSize: 11, fontWeight: '700', color: colors.lime }}>
+                {locale === 'es' ? 'Reconciliar saldo real con el banco' : 'Reconcile real balance with bank'}
+              </Text>
+            </TouchableOpacity>
+          )}
+
+          {/* Footer Action Buttons */}
           <View style={{ flexDirection: 'row', gap: 10 }}>
             <TouchableOpacity
               onPress={onClose}
               style={{
                 flex: 1,
-                paddingVertical: 12,
-                borderRadius: 12,
-                backgroundColor: colors.cardLight,
+                paddingVertical: 13,
+                borderRadius: 14,
+                backgroundColor: 'rgba(255, 255, 255, 0.08)',
                 alignItems: 'center',
                 justifyContent: 'center',
                 borderWidth: 1,
@@ -181,19 +334,18 @@ export const EditIncomeModal: React.FC<EditIncomeModalProps> = ({
             <TouchableOpacity
               onPress={handleSave}
               style={{
-                flex: 1,
-                paddingVertical: 12,
-                borderRadius: 12,
-                backgroundColor: colors.primary,
+                flex: 1.5,
+                paddingVertical: 13,
+                borderRadius: 14,
+                backgroundColor: colors.lime,
                 alignItems: 'center',
                 justifyContent: 'center',
-                shadowColor: colors.primary,
-                shadowOpacity: 0.35,
-                shadowRadius: 6,
-                elevation: 3,
+                flexDirection: 'row',
+                gap: 6,
               }}
             >
-              <Text style={{ fontSize: 13, fontWeight: '900', color: '#FFFFFF' }}>
+              <Ionicons name="checkmark" size={18} color={colors.limeText} />
+              <Text style={{ fontSize: 13, fontWeight: '900', color: colors.limeText }}>
                 {locale === 'es' ? 'Guardar' : 'Save'}
               </Text>
             </TouchableOpacity>

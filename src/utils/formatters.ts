@@ -51,10 +51,34 @@ export interface ExpenseTotals {
   pendingCount: number;
   remainingBalance: number;
   percentageUsed: number;
+  monthlyIncome: number;
+  rolloverSurplus: number;
+  extraIncomeTotal: number;
+  totalLiquidity: number;
 }
 
-export function calculateTotals(items: ExpenseItem[], monthlyIncome: number = 0): ExpenseTotals {
-  const initial = {
+export function calculateTotals(
+  items: ExpenseItem[],
+  budgetOrIncome: MonthlyBudget | number = 0
+): ExpenseTotals {
+  let monthlyIncome = 0;
+  let rolloverSurplus = 0;
+  let extraIncomeTotal = 0;
+
+  if (typeof budgetOrIncome === 'number') {
+    monthlyIncome = budgetOrIncome;
+  } else if (budgetOrIncome) {
+    monthlyIncome = budgetOrIncome.monthlyIncome || 0;
+    rolloverSurplus = budgetOrIncome.rolloverSurplus || 0;
+    extraIncomeTotal = (budgetOrIncome.extraIncomes || []).reduce(
+      (sum, item) => sum + (item.amount || 0),
+      0
+    );
+  }
+
+  const totalLiquidity = monthlyIncome + rolloverSurplus + extraIncomeTotal;
+
+  const initial: ExpenseTotals = {
     total: 0,
     totalPaid: 0,
     totalPending: 0,
@@ -65,8 +89,12 @@ export function calculateTotals(items: ExpenseItem[], monthlyIncome: number = 0)
     count: 0,
     paidCount: 0,
     pendingCount: 0,
-    remainingBalance: monthlyIncome,
+    remainingBalance: totalLiquidity,
     percentageUsed: 0,
+    monthlyIncome,
+    rolloverSurplus,
+    extraIncomeTotal,
+    totalLiquidity,
   };
 
   const calculated = items.reduce((acc, item) => {
@@ -89,8 +117,11 @@ export function calculateTotals(items: ExpenseItem[], monthlyIncome: number = 0)
     return acc;
   }, initial);
 
-  calculated.remainingBalance = Math.max(0, monthlyIncome - calculated.total);
-  calculated.percentageUsed = monthlyIncome > 0 ? Math.min(100, Math.round((calculated.total / monthlyIncome) * 100)) : 0;
+  calculated.remainingBalance = Math.max(0, totalLiquidity - calculated.total);
+  calculated.percentageUsed =
+    totalLiquidity > 0
+      ? Math.min(100, Math.round((calculated.total / totalLiquidity) * 100))
+      : 0;
 
   return calculated;
 }

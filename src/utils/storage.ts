@@ -25,6 +25,9 @@ export const DEFAULT_PREFERENCES: UserPreferences = {
 export const DEFAULT_BUDGET: MonthlyBudget = {
   month: new Date().toISOString().slice(0, 7),
   monthlyIncome: 0,
+  incomeType: 'fixed_salary',
+  extraIncomes: [],
+  rolloverSurplus: 0,
   currency: 'USD',
   savingsGoal: 0,
 };
@@ -78,7 +81,13 @@ export async function loadBudget(): Promise<MonthlyBudget> {
       if (parsed.monthlyIncome === 2500 && parsed.savingsGoal === 500) {
         return DEFAULT_BUDGET;
       }
-      return parsed;
+      return {
+        ...DEFAULT_BUDGET,
+        ...parsed,
+        extraIncomes: parsed.extraIncomes || [],
+        incomeType: parsed.incomeType || 'fixed_salary',
+        rolloverSurplus: typeof parsed.rolloverSurplus === 'number' ? parsed.rolloverSurplus : 0,
+      };
     }
   } catch (err) {
     console.warn('Error loading budget:', err);

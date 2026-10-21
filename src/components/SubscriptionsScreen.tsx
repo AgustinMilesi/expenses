@@ -45,7 +45,7 @@ export const SubscriptionsScreen: React.FC<SubscriptionsScreenProps> = ({
   onDeleteExpense,
 }) => {
   const t = getTranslations(locale);
-  const totals = calculateTotals(expenses, budget.monthlyIncome);
+  const totals = calculateTotals(expenses, budget);
 
   const subs = expenses.filter((e) => e.category === 'subscription');
   const fixed = expenses.filter((e) => e.category === 'fixed');
@@ -201,9 +201,16 @@ export const SubscriptionsScreen: React.FC<SubscriptionsScreenProps> = ({
                   </View>
                   <View>
                     <Text style={[styles.subTitle, { color: colors.text }]}>{sub.title}</Text>
-                    <Text style={[styles.subInfo, { color: colors.textDim }]}>
-                      {t.dueDay(sub.dueDate)} • {sub.notes || 'Suscripción mensual'}
-                    </Text>
+                    <View style={{ flexDirection: 'row', alignItems: 'center', gap: 5 }}>
+                      <Text style={[styles.subInfo, { color: colors.textDim }]}>
+                        {t.dueDay(sub.dueDate)} • {sub.notes || 'Suscripción mensual'}
+                      </Text>
+                      {sub.autoPaid ? (
+                        <View style={{ backgroundColor: colors.limeGlow, paddingHorizontal: 4, paddingVertical: 1, borderRadius: 4 }}>
+                          <Text style={{ fontSize: 9, fontWeight: '800', color: colors.lime }}>⚡ AUTO</Text>
+                        </View>
+                      ) : null}
+                    </View>
                   </View>
                 </View>
 
@@ -267,9 +274,16 @@ export const SubscriptionsScreen: React.FC<SubscriptionsScreenProps> = ({
                   </View>
                   <View>
                     <Text style={[styles.subTitle, { color: colors.text }]}>{fix.title}</Text>
-                    <Text style={[styles.subInfo, { color: colors.textDim }]}>
-                      {t.dueDay(fix.dueDate)} • {fix.notes || 'Gasto fijo'}
-                    </Text>
+                    <View style={{ flexDirection: 'row', alignItems: 'center', gap: 5 }}>
+                      <Text style={[styles.subInfo, { color: colors.textDim }]}>
+                        {t.dueDay(fix.dueDate)} • {fix.notes || 'Gasto fijo'}
+                      </Text>
+                      {fix.autoPaid ? (
+                        <View style={{ backgroundColor: colors.limeGlow, paddingHorizontal: 4, paddingVertical: 1, borderRadius: 4 }}>
+                          <Text style={{ fontSize: 9, fontWeight: '800', color: colors.lime }}>⚡ AUTO</Text>
+                        </View>
+                      ) : null}
+                    </View>
                   </View>
                 </View>
 

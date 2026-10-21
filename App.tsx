@@ -11,6 +11,8 @@ import {
   Currency,
   ExpenseCategory,
   ExpenseItem,
+  ExtraIncomeItem,
+  IncomeType,
   MonthlyBudget,
   ShakeSensitivity,
 } from './src/types/expense';
@@ -37,6 +39,9 @@ import { BottomNavBar } from './src/components/BottomNavBar';
 import { PreferencesModal } from './src/components/PreferencesModal';
 import { EditIncomeModal } from './src/components/EditIncomeModal';
 import { AddExpenseModal } from './src/components/AddExpenseModal';
+import { FixedExpensesModal } from './src/components/FixedExpensesModal';
+import { AddExtraIncomeModal } from './src/components/AddExtraIncomeModal';
+import { MonthReconciliationModal } from './src/components/MonthReconciliationModal';
 import { LegalModal } from './src/components/LegalModal';
 import { UpdateBanner } from './src/components/UpdateBanner';
 import { UpdateModal, UpdateTriggerType } from './src/components/UpdateModal';
@@ -70,6 +75,10 @@ export default function App() {
   const [isPreferencesOpen, setIsPreferencesOpen] = useState(false);
   const [isEditIncomeOpen, setIsEditIncomeOpen] = useState(false);
   const [isAddExpenseModalOpen, setIsAddExpenseModalOpen] = useState(false);
+  const [isFixedExpensesModalOpen, setIsFixedExpensesModalOpen] = useState(false);
+  const [isAddExtraIncomeOpen, setIsAddExtraIncomeOpen] = useState(false);
+  const [isReconciliationModalOpen, setIsReconciliationModalOpen] = useState(false);
+  const [theoreticalLeftover, setTheoreticalLeftover] = useState(0);
   const [legalModalType, setLegalModalType] = useState<'terms' | 'privacy' | 'cookies' | null>(null);
 
   // Theme & Translations
@@ -87,7 +96,7 @@ export default function App() {
     handleTriggerUpdate('shake');
   }, { enabled: shakeToUpdate, sensitivity: shakeSensitivity });
 
-  // Load Persisted Data on Startup
+  // Load Persisted Data on Startup with Auto-Pay & Rollover Detection
   useEffect(() => {
     async function init() {
       try {
@@ -104,11 +113,82 @@ export default function App() {
         setShakeToUpdate(loadedPrefs.shakeToUpdate !== false);
         setShakeSensitivity(loadedPrefs.shakeSensitivity || 'firm');
 
-        setBudget({
+        const currentMonth = new Date().toISOString().slice(0, 7);
+        const todayDay = new Date().getDate();
+
+        let initialBudget: MonthlyBudget = {
           ...loadedBudget,
           currency: loadedPrefs.currency || loadedBudget.currency,
-        });
-        setExpenses(loadedExpenses);
+        };
+
+        let initialExpenses = [...loadedExpenses];
+
+        // 1. Month Transition & Leftover Rollover check
+        const isMonthTransition = Boolean(
+          loadedBudget.month &&
+          loadedBudget.month !== currentMonth &&
+          loadedBudget.reconciledForMonth !== currentMonth
+        );
+
+        if (isMonthTransition) {
+          const prevExtraTotal = (loadedBudget.extraIncomes || []).reduce(
+            (sum, e) => sum + (e.amount || 0),
+            0
+          );
+          const prevTotalLiquidity =
+            (loadedBudget.monthlyIncome || 0) +
+            (loadedBudget.rolloverSurplus || 0) +
+            prevExtraTotal;
+          const prevTotalSpent = loadedExpenses.reduce(
+            (sum, e) => sum + (e.amount || 0),
+            0
+          );
+          const surplus = Math.max(0, prevTotalLiquidity - prevTotalSpent);
+
+          setTheoreticalLeftover(surplus);
+          setIsReconciliationModalOpen(true);
+
+          // Reset recurring expenses for new month: auto-pay if due date has already passed
+          initialExpenses = initialExpenses.map((item) => {
+            if (item.category === 'subscription' || item.category === 'fixed') {
+              const isPastDue = item.dueDate <= todayDay;
+              return {
+                ...item,
+                isPaid: isPastDue,
+                autoPaid: isPastDue,
+                lastPaidMonth: isPastDue ? currentMonth : undefined,
+              };
+            }
+            return item;
+          });
+          await saveExpenses(initialExpenses);
+        } else {
+          // 2. Same month: evaluate auto-pay for subscriptions and fixed expenses
+          let hasAutoPaidUpdates = false;
+          initialExpenses = initialExpenses.map((item) => {
+            if (
+              (item.category === 'subscription' || item.category === 'fixed') &&
+              item.dueDate <= todayDay &&
+              !item.isPaid
+            ) {
+              hasAutoPaidUpdates = true;
+              return {
+                ...item,
+                isPaid: true,
+                autoPaid: true,
+                lastPaidMonth: currentMonth,
+              };
+            }
+            return item;
+          });
+
+          if (hasAutoPaidUpdates) {
+            await saveExpenses(initialExpenses);
+          }
+        }
+
+        setBudget(initialBudget);
+        setExpenses(initialExpenses);
       } catch (err) {
         console.error('Error during initialization:', err);
       } finally {
@@ -194,10 +274,89 @@ export default function App() {
     Alert.alert('Suscripciones al día', 'Todas las suscripciones y gastos fijos se marcaron como pagados.');
   };
 
-  const handleSaveIncome = async (newIncome: number) => {
-    const updatedBudget = { ...budget, monthlyIncome: newIncome };
+  const handleSaveIncome = async (newIncome: number, incomeType: IncomeType) => {
+    const updatedBudget: MonthlyBudget = { ...budget, monthlyIncome: newIncome, incomeType };
     setBudget(updatedBudget);
     await saveBudget(updatedBudget);
+  };
+
+  const handleAddExtraIncome = async (newItem: Omit<ExtraIncomeItem, 'id' | 'createdAt'>) => {
+    const created: ExtraIncomeItem = {
+      ...newItem,
+      id: `extra-${Date.now()}`,
+      createdAt: new Date().toISOString(),
+    };
+    const updatedExtras = [created, ...(budget.extraIncomes || [])];
+    const updatedBudget: MonthlyBudget = {
+      ...budget,
+      extraIncomes: updatedExtras,
+    };
+    setBudget(updatedBudget);
+    await saveBudget(updatedBudget);
+    Alert.alert(
+      locale === 'es' ? '¡Dinero extra añadido!' : 'Extra money added!',
+      locale === 'es'
+        ? `Se sumaron +$${newItem.amount.toFixed(2)} a tu saldo disponible.`
+        : `+$${newItem.amount.toFixed(2)} added to available balance.`
+    );
+  };
+
+  const handleDeleteExtraIncome = async (id: string) => {
+    const updatedExtras = (budget.extraIncomes || []).filter((e) => e.id !== id);
+    const updatedBudget: MonthlyBudget = { ...budget, extraIncomes: updatedExtras };
+    setBudget(updatedBudget);
+    await saveBudget(updatedBudget);
+  };
+
+  const handleAddFixedExpense = async (newItem: Omit<ExpenseItem, 'id' | 'createdAt'>) => {
+    const created: ExpenseItem = {
+      ...newItem,
+      id: `exp-${Date.now()}`,
+      createdAt: new Date().toISOString(),
+    };
+    const updated = [created, ...expenses];
+    setExpenses(updated);
+    await saveExpenses(updated);
+    Alert.alert(
+      locale === 'es' ? 'Gasto fijo guardado' : 'Fixed expense saved',
+      locale === 'es'
+        ? `Se agregó "${newItem.title}" por $${newItem.amount.toFixed(2)}.`
+        : `"${newItem.title}" ($${newItem.amount.toFixed(2)}) added.`
+    );
+  };
+
+  const handleConfirmReconciliationExact = async () => {
+    const currentMonth = new Date().toISOString().slice(0, 7);
+    const updatedBudget: MonthlyBudget = {
+      ...budget,
+      month: currentMonth,
+      rolloverSurplus: theoreticalLeftover,
+      reconciledForMonth: currentMonth,
+      extraIncomes: [],
+    };
+    setBudget(updatedBudget);
+    await saveBudget(updatedBudget);
+    setIsReconciliationModalOpen(false);
+  };
+
+  const handleAdjustRealLeftover = async (actualAmount: number) => {
+    const currentMonth = new Date().toISOString().slice(0, 7);
+    const updatedBudget: MonthlyBudget = {
+      ...budget,
+      month: currentMonth,
+      rolloverSurplus: actualAmount,
+      reconciledForMonth: currentMonth,
+      extraIncomes: [],
+    };
+    setBudget(updatedBudget);
+    await saveBudget(updatedBudget);
+    setIsReconciliationModalOpen(false);
+  };
+
+  const handleManualTriggerReconciliation = () => {
+    const totals = calculateTotals(expenses, budget);
+    setTheoreticalLeftover(totals.remainingBalance);
+    setIsReconciliationModalOpen(true);
   };
 
   if (isLoading) {
@@ -240,6 +399,8 @@ export default function App() {
                 onOpenPreferences={() => setIsPreferencesOpen(true)}
                 onOpenNotifications={() => Alert.alert(t.notifications, 'Gastos y suscripciones al día.')}
                 onOpenEditIncome={() => setIsEditIncomeOpen(true)}
+                onOpenFixedExpenses={() => setIsFixedExpensesModalOpen(true)}
+                onOpenAddExtraIncome={() => setIsAddExtraIncomeOpen(true)}
                 onNavigateToAddExpense={(cat) => {
                   setQuickExpenseCategory(cat || 'micro');
                   setCurrentScreen('quickExpense');
@@ -349,11 +510,13 @@ export default function App() {
         <EditIncomeModal
           visible={isEditIncomeOpen}
           currentIncome={budget.monthlyIncome}
+          currentIncomeType={budget.incomeType || 'fixed_salary'}
           currency={currency}
           locale={locale}
           colors={colors}
           onClose={() => setIsEditIncomeOpen(false)}
           onSave={handleSaveIncome}
+          onTriggerReconciliation={handleManualTriggerReconciliation}
         />
 
         {/* 3. Detailed Add Expense / Subscription Modal */}
@@ -366,7 +529,44 @@ export default function App() {
           onSave={handleSaveExpense}
         />
 
-        {/* 4. In-App Legal & Compliance Modal */}
+        {/* 4. Dedicated Fixed Expenses Sheet / Modal */}
+        <FixedExpensesModal
+          visible={isFixedExpensesModalOpen}
+          expenses={expenses}
+          currency={currency}
+          locale={locale}
+          colors={colors}
+          onClose={() => setIsFixedExpensesModalOpen(false)}
+          onAddFixedExpense={handleAddFixedExpense}
+          onTogglePaid={handleTogglePaid}
+          onDeleteExpense={handleDeleteExpense}
+        />
+
+        {/* 5. Add Extra Income / Gift Modal */}
+        <AddExtraIncomeModal
+          visible={isAddExtraIncomeOpen}
+          extraIncomes={budget.extraIncomes || []}
+          currency={currency}
+          locale={locale}
+          colors={colors}
+          onClose={() => setIsAddExtraIncomeOpen(false)}
+          onAddExtraIncome={handleAddExtraIncome}
+          onDeleteExtraIncome={handleDeleteExtraIncome}
+        />
+
+        {/* 6. Month End Rollover & Reconciliation Modal */}
+        <MonthReconciliationModal
+          visible={isReconciliationModalOpen}
+          theoreticalLeftover={theoreticalLeftover}
+          currency={currency}
+          locale={locale}
+          colors={colors}
+          onConfirmExact={handleConfirmReconciliationExact}
+          onAdjustRealLeftover={handleAdjustRealLeftover}
+          onClose={() => setIsReconciliationModalOpen(false)}
+        />
+
+        {/* 7. In-App Legal & Compliance Modal */}
         <LegalModal
           visible={legalModalType !== null}
           onClose={() => setLegalModalType(null)}

@@ -24,15 +24,31 @@ export interface ExpenseItem {
   category: ExpenseCategory;
   dueDate: number; // Day of month (1-31)
   isPaid: boolean;
+  autoPaid?: boolean; // Automatically marked as paid when due date arrived
+  lastPaidMonth?: string; // YYYY-MM when it was paid for
   notes?: string;
   iconName: string;
   color: string;
   createdAt: string;
 }
 
+export type IncomeType = 'fixed_salary' | 'variable_start';
+
+export interface ExtraIncomeItem {
+  id: string;
+  title: string;
+  amount: number;
+  createdAt: string;
+  notes?: string;
+}
+
 export interface MonthlyBudget {
   month: string;
   monthlyIncome: number;
+  incomeType?: IncomeType;
+  extraIncomes?: ExtraIncomeItem[];
+  rolloverSurplus?: number;
+  reconciledForMonth?: string;
   currency: Currency;
   savingsGoal: number;
 }

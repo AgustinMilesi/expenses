@@ -28,6 +28,8 @@ interface HomeScreenProps {
   onOpenPreferences: () => void;
   onOpenNotifications: () => void;
   onOpenEditIncome: () => void;
+  onOpenFixedExpenses: () => void;
+  onOpenAddExtraIncome: () => void;
   onNavigateToAddExpense: (prefilledCategory?: ExpenseCategory) => void;
   onNavigateToSubs: () => void;
   onTogglePaid: (expenseId: string) => void;
@@ -45,6 +47,8 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({
   onOpenPreferences,
   onOpenNotifications,
   onOpenEditIncome,
+  onOpenFixedExpenses,
+  onOpenAddExtraIncome,
   onNavigateToAddExpense,
   onNavigateToSubs,
   onTogglePaid,
@@ -53,7 +57,7 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({
   onCheckUpdates,
 }) => {
   const t = getTranslations(locale);
-  const totals = calculateTotals(expenses, budget.monthlyIncome);
+  const totals = calculateTotals(expenses, budget);
 
   const [activeCategoryFilter, setActiveCategoryFilter] = useState<CategoryFilter>('all');
 
@@ -197,7 +201,30 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({
                 ? (locale === 'es'
                     ? '⚡ Tocá acá para definir tu ingreso mensual'
                     : '⚡ Tap here to define your monthly income')
-                : `${t.monthlyIncome}: ${formatCurrency(budget.monthlyIncome, currency)} • ${t.totalCommitted}: ${formatCurrency(totals.total, currency)}`}
+                : `${budget.incomeType === 'variable_start' ? (locale === 'es' ? 'Inicio' : 'Start') : t.monthlyIncome}: ${formatCurrency(budget.monthlyIncome, currency)}${totals.rolloverSurplus > 0 ? ` • Sobrante: +${formatCurrency(totals.rolloverSurplus, currency)}` : ''}${totals.extraIncomeTotal > 0 ? ` • Extra: +${formatCurrency(totals.extraIncomeTotal, currency)}` : ''} • ${t.totalCommitted}: ${formatCurrency(totals.total, currency)}`}
+            </Text>
+          </TouchableOpacity>
+
+          {/* Quick Add Extra Money / Gift Pill */}
+          <TouchableOpacity
+            onPress={onOpenAddExtraIncome}
+            activeOpacity={0.8}
+            style={{
+              flexDirection: 'row',
+              alignItems: 'center',
+              backgroundColor: 'rgba(12, 16, 8, 0.12)',
+              paddingHorizontal: 12,
+              paddingVertical: 4.5,
+              borderRadius: 20,
+              alignSelf: 'center',
+              marginTop: 6,
+              marginBottom: 4,
+              gap: 5,
+            }}
+          >
+            <Ionicons name="gift-outline" size={13} color={colors.limeText} />
+            <Text style={{ fontSize: 11, fontWeight: '800', color: colors.limeText }}>
+              {locale === 'es' ? '+ Dinero Extra / Regalo' : '+ Extra Cash / Gift'}
             </Text>
           </TouchableOpacity>
 
@@ -231,10 +258,10 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({
               </Text>
             </View>
 
-            {/* 3. Fijos */}
+            {/* 3. Fijos (Abre el menú de gastos fijos) */}
             <View style={styles.heroActionItem}>
               <TouchableOpacity
-                onPress={() => setActiveCategoryFilter('fixed')}
+                onPress={onOpenFixedExpenses}
                 style={[styles.heroActionCircle, { backgroundColor: colors.card }]}
                 activeOpacity={0.8}
               >
@@ -351,9 +378,16 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({
                   <Text style={[styles.subNameText, { color: colors.text }]} numberOfLines={1}>
                     {sub.title}
                   </Text>
-                  <Text style={[styles.subDetailText, { color: colors.textDim }]}>
-                    {t.dueDay(sub.dueDate)} • {formatCurrency(sub.amount, currency)}
-                  </Text>
+                  <View style={{ flexDirection: 'row', alignItems: 'center', gap: 4 }}>
+                    <Text style={[styles.subDetailText, { color: colors.textDim }]}>
+                      {t.dueDay(sub.dueDate)} • {formatCurrency(sub.amount, currency)}
+                    </Text>
+                    {sub.autoPaid ? (
+                      <View style={{ backgroundColor: colors.limeGlow, paddingHorizontal: 4, paddingVertical: 1, borderRadius: 4 }}>
+                        <Text style={{ fontSize: 9, fontWeight: '800', color: colors.lime }}>⚡</Text>
+                      </View>
+                    ) : null}
+                  </View>
                 </View>
                 <View
                   style={[
@@ -443,9 +477,16 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({
                       <Text style={[styles.expenseTitle, { color: colors.text }]}>
                         {expense.title}
                       </Text>
-                      <Text style={[styles.expenseSub, { color: colors.textDim }]}>
-                        {expense.notes || t[expense.category] || expense.category} • {t.dueDay(expense.dueDate)}
-                      </Text>
+                      <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6, marginTop: 2 }}>
+                        <Text style={[styles.expenseSub, { color: colors.textDim }]}>
+                          {expense.notes || t[expense.category] || expense.category} • {t.dueDay(expense.dueDate)}
+                        </Text>
+                        {expense.autoPaid ? (
+                          <View style={{ backgroundColor: colors.limeGlow, paddingHorizontal: 4, paddingVertical: 1, borderRadius: 4 }}>
+                            <Text style={{ fontSize: 9, fontWeight: '800', color: colors.lime }}>⚡ AUTO</Text>
+                          </View>
+                        ) : null}
+                      </View>
                     </View>
                   </TouchableOpacity>
 
