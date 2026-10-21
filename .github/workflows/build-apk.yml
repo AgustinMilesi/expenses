@@ -2,17 +2,27 @@ name: Build Android APK (VOUT)
 
 on:
   workflow_dispatch:
+    inputs:
+      skip_build:
+        description: 'Skip triggering new EAS build and publish latest finished APK'
+        required: false
+        type: boolean
+        default: false
   push:
     branches:
       - main
     paths:
       - 'app.json'
+      - 'package.json'
       - 'assets/**'
       - '.github/workflows/build-apk.yml'
 
+permissions:
+  contents: write
+
 jobs:
   build:
-    name: Build Standalone Android APK
+    name: Build Standalone Android APK & Release
     runs-on: ubuntu-latest
     steps:
       - name: 🏗 Checkout repository
@@ -28,6 +38,62 @@ jobs:
         run: npm ci
 
       - name: 🔨 Trigger EAS Build APK
+        if: ${{ !inputs.skip_build }}
         env:
           EXPO_TOKEN: ${{ secrets.EXPO_TOKEN }}
-        run: npx --yes eas-cli build -p android --profile preview --non-interactive
+        run: npx --yes eas-cli build -p android --profile preview --wait --non-interactive
+
+      - name: 📥 Fetch & Download Built APK
+        env:
+          EXPO_TOKEN: ${{ secrets.EXPO_TOKEN }}
+        run: |
+          echo "Fetching latest finished build from EAS..."
+          BUILD_JSON=$(npx --yes eas-cli build:list --platform android --status finished --limit 1 --json)
+          node -e '
+            const fs = require("fs");
+            const data = JSON.parse(process.env.BUILD_JSON);
+            const build = data[0];
+            if (!build) {
+              console.error("No finished build found on EAS!");
+              process.exit(1);
+            }
+            const url = build.artifacts?.applicationArchiveUrl || build.artifacts?.buildUrl;
+            console.log("Latest Finished Build ID:", build.id);
+            console.log("APK Artifact URL:", url);
+            if (!url) {
+              console.error("No APK download URL found in build artifacts!");
+              process.exit(1);
+            }
+            fs.writeFileSync("apk_url.txt", url);
+          '
+          APK_URL=$(cat apk_url.txt)
+          echo "Downloading VOUT.apk..."
+          curl -L -o VOUT.apk "$APK_URL"
+          ls -lh VOUT.apk
+
+      - name: 🏷 Extract Version
+        run: |
+          VERSION=$(node -p "require('./package.json').version")
+          echo "APP_VERSION=$VERSION" >> $GITHUB_ENV
+
+      - name: 🚀 Publish Direct APK to GitHub Releases
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: "v${{ env.APP_VERSION }}"
+          name: "VOUT v${{ env.APP_VERSION }}"
+          body: |
+            ### 📱 VOUT v${{ env.APP_VERSION }} - Official Android Release
+
+            Descarga directa de **VOUT** en 1 solo clic para dispositivos Android.
+            
+            #### ⚡ Descarga Directa
+            - **[⬇️ Descargar VOUT.apk](https://github.com/AgustinMilesi/expenses/releases/latest/download/VOUT.apk)**
+            
+            #### 📋 Información de Build
+            - **Versión de App:** `v${{ env.APP_VERSION }}`
+            - **Canal:** `production`
+            - **Compatibilidad:** Android 8.0+
+          files: VOUT.apk
+          draft: false
+          prerelease: false
+          make_latest: true

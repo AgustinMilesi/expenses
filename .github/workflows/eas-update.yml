@@ -28,4 +28,6 @@ jobs:
       - name: 🚀 Publish EAS Update
         env:
           EXPO_TOKEN: ${{ secrets.EXPO_TOKEN }}
-        run: npx --yes eas-cli update --branch production --environment production --auto --non-interactive
+        run: |
+          APP_VER=$(node -p "require('./package.json').version")
+          npx --yes eas-cli update --branch production --message "Release v$APP_VER" --environment production --auto --non-interactive

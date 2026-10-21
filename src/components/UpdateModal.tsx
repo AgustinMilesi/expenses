@@ -13,6 +13,7 @@ import * as Updates from 'expo-updates';
 import { AppLocale } from '../types/expense';
 import { ThemeColors } from '../utils/theme';
 import { getTranslations } from '../utils/i18n';
+import { APP_VERSION } from '../utils/version';
 
 export type UpdateTriggerType = 'shake' | 'manual';
 export type UpdateStatus = 'idle' | 'checking' | 'downloading' | 'ready' | 'upToDate' | 'error';
@@ -229,18 +230,18 @@ export const UpdateModal: React.FC<UpdateModalProps> = ({
             >
               <View style={styles.metaRow}>
                 <Text style={[styles.metaLabel, { color: colors.textMuted }]}>
-                  Canal:
+                  {locale === 'es' ? 'Versión:' : 'Version:'}
                 </Text>
-                <Text style={[styles.metaValue, { color: colors.lime }]}>
-                  {Updates.channel || 'production'}
+                <Text style={[styles.metaValue, { color: colors.lime, fontWeight: '800' }]}>
+                  v{APP_VERSION}
                 </Text>
               </View>
               <View style={styles.metaRow}>
                 <Text style={[styles.metaLabel, { color: colors.textMuted }]}>
-                  Runtime:
+                  Canal:
                 </Text>
                 <Text style={[styles.metaValue, { color: colors.text }]}>
-                  {Updates.runtimeVersion || '1.0.0'}
+                  {Updates.channel || 'production'}
                 </Text>
               </View>
               <View style={styles.metaRow}>

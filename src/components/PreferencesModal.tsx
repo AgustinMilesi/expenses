@@ -20,6 +20,7 @@ import { ACCENT_PALETTES, ThemeColors } from '../utils/theme';
 import { getTranslations, LOCALES } from '../utils/i18n';
 import { CURRENCY_INFO } from '../utils/formatters';
 import { loadVoutAccount, saveVoutAccount } from '../utils/storage';
+import { APP_VERSION } from '../utils/version';
 
 interface PreferencesModalProps {
   visible: boolean;
@@ -620,7 +621,7 @@ export const PreferencesModal: React.FC<PreferencesModalProps> = ({
             {/* Version & Close Button */}
             <View style={styles.footerSection}>
               <Text style={[styles.versionText, { color: colors.textDim }]}>
-                VOUT v1.0.0 • React Native &amp; Expo
+                VOUT v{APP_VERSION} • React Native &amp; Expo
               </Text>
               <TouchableOpacity
                 onPress={onClose}
