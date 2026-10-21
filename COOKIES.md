@@ -3,7 +3,7 @@
 **Last Updated:** October 20, 2026  
 **Effective Date:** October 20, 2026
 
-This Cookie and Local Storage Policy explains how **PocketWallet** utilizes local device storage technologies, offline caches, and preferences storage instead of traditional web tracking cookies.
+This Cookie and Local Storage Policy explains how **VOUT** utilizes local device storage technologies, offline caches, and preferences storage instead of traditional web tracking cookies.
 
 ---
 
@@ -12,13 +12,13 @@ This Cookie and Local Storage Policy explains how **PocketWallet** utilizes loca
 - **Traditional Web Cookies:** Small text files sent between a web browser and an external server to track sessions, authenticate web users, and serve targeted digital advertisements across websites.
 - **Native Mobile Storage (`AsyncStorage`):** An encrypted key-value storage system embedded within iOS and Android sandbox environments. It operates completely offline, never transmits data over the Internet, and cannot be accessed by other applications installed on your phone.
 
-## 2. Does PocketWallet Use Tracking Cookies?
+## 2. Does VOUT Use Tracking Cookies?
 
-**NO.** PocketWallet does not implement third-party tracking cookies, advertising identifiers (IDFA or GAID), or cross-site tracking beacons. 
+**NO.** VOUT does not implement third-party tracking cookies, advertising identifiers (IDFA or GAID), or cross-site tracking beacons. 
 
 ## 3. How We Use Local Storage (AsyncStorage)
 
-PocketWallet uses persistent device storage strictly for essential, user-facing functionalities:
+VOUT uses persistent device storage strictly for essential, user-facing functionalities:
 
 | Storage Key | Purpose | Expiration |
 | :--- | :--- | :--- |
@@ -32,7 +32,7 @@ PocketWallet uses persistent device storage strictly for essential, user-facing 
 
 You maintain complete control over this stored data at all times:
 1. **Via the App:** You can clear transaction history in the History screen or reset balances via the preferences menu.
-2. **Via Android Settings:** Navigate to `Settings` -> `Apps` -> `PocketWallet` -> `Storage & Cache` -> `Clear Storage`.
+2. **Via Android Settings:** Navigate to `Settings` -> `Apps` -> `VOUT` -> `Storage & Cache` -> `Clear Storage`.
 3. **Via iOS Settings:** Uninstalling the app permanently purges all sandboxed data from your iPhone or iPad.
 
 ## 5. Inquiries

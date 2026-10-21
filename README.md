@@ -1,9 +1,9 @@
-# ⚡ VOLT — Cyber-Lime Expenses, Subscriptions & Micro-spending Tracker
+# ⚡ VOUT — Cyber-Lime Expenses, Subscriptions & Micro-spending Tracker
 
 A high-performance personal expense and recurring commitments manager built with **React Native**, **Expo (TypeScript)**, and **NativeWind (Tailwind CSS)**. Designed with a striking **Cyber Lime & Deep Charcoal** aesthetic, engineered specifically for tracking **daily expenses**, **monthly subscriptions**, **fixed utility bills**, and **micro-expenses** (coffee, snacks, transport) with instant numerical keypad entry and disposable balance calculations.
 
 <p align="left">
-  <a href="https://expo.dev/accounts/agustinmilesi/projects/pocket-expenses/builds/e96134f5-2f11-4b67-9a96-d65a1b371b51"><img src="https://img.shields.io/badge/Download%20APK-VOLT%20v1.0.0-C6F827?style=for-the-badge&logo=android&logoColor=black" alt="Download VOLT APK" /></a>
+  <a href="https://expo.dev/accounts/agustinmilesi/projects/pocket-expenses/builds/e96134f5-2f11-4b67-9a96-d65a1b371b51"><img src="https://img.shields.io/badge/Download%20APK-VOUT%20v1.0.0-C6F827?style=for-the-badge&logo=android&logoColor=black" alt="Download VOUT APK" /></a>
   <a href="https://expo.dev/accounts/agustinmilesi/projects/pocket-expenses"><img src="https://img.shields.io/badge/Expo%20Project-pocket--expenses-4630EB?style=for-the-badge&logo=expo" alt="Expo Project" /></a>
   <img src="https://img.shields.io/badge/Platform-iOS%20%7C%20Android%20%7C%20Web-black?style=for-the-badge&logo=expo" alt="Expo Platform" />
   <img src="https://img.shields.io/badge/Expo-SDK%2058-000020?style=for-the-badge&logo=expo" alt="Expo SDK" />
@@ -26,7 +26,7 @@ A high-performance personal expense and recurring commitments manager built with
 
 ## 🎨 Visual Identity & Screen Architecture
 
-VOLT pairs high-contrast neo-fintech aesthetics with disciplined budget tracking:
+VOUT pairs high-contrast neo-fintech aesthetics with disciplined budget tracking:
 
 ### 1. 🏠 Home / Dashboard
 - **Profile & Quick Settings:** User header with live savings streak indicator, alerts bell, and interface preferences trigger.
@@ -89,7 +89,7 @@ Imported and unified with the enterprise suite (`erp`, `saas`, `sap`, `contact-p
 
 ## ⚖️ Legal & Regulatory Compliance
 
-VOLT adheres to global consumer privacy and data sovereignty standards:
+VOUT adheres to global consumer privacy and data sovereignty standards:
 - [Terms of Service (TERMS_OF_SERVICE.md)](./TERMS_OF_SERVICE.md)
 - [Privacy Policy (PRIVACY_POLICY.md)](./PRIVACY_POLICY.md)
 - [Cookie & Storage Policy (COOKIES.md)](./COOKIES.md)

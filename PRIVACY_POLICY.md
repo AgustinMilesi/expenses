@@ -3,13 +3,13 @@
 **Last Updated:** October 20, 2026  
 **Effective Date:** October 20, 2026
 
-At **PocketWallet**, safeguarding your privacy and ensuring transparency regarding how financial and personal data is handled is our highest priority. This Privacy Policy details our offline-first architecture, zero-tracking commitment, and your rights under global privacy regulations, including the European Union General Data Protection Regulation (GDPR) and the California Consumer Privacy Act (CCPA).
+At **VOUT**, safeguarding your privacy and ensuring transparency regarding how financial and personal data is handled is our highest priority. This Privacy Policy details our offline-first architecture, zero-tracking commitment, and your rights under global privacy regulations, including the European Union General Data Protection Regulation (GDPR) and the California Consumer Privacy Act (CCPA).
 
 ---
 
 ## 1. Core Principle: Privacy by Design
 
-PocketWallet is fundamentally engineered as an **offline-first, zero-telemetry client application**:
+VOUT is fundamentally engineered as an **offline-first, zero-telemetry client application**:
 - **No Remote Database:** We do not host your transactions, banking figures, budgets, or balances on external centralized cloud servers.
 - **No Third-Party Brokers:** We do not monetize, rent, disclose, or sell your financial habits or personal records to data brokers, advertising networks, or analytics aggregators.
 - **Local Sandbox Storage:** 100% of your transactional data resides directly within your mobile operating system's private sandbox via React Native `AsyncStorage`.
@@ -30,7 +30,7 @@ The application stores the following categories of data strictly on your local d
 
 ## 3. Third-Party Integrations & Network Permissions
 
-PocketWallet runs independently without requiring ongoing network connectivity:
+VOUT runs independently without requiring ongoing network connectivity:
 - The network permission in the manifest is used strictly for downloading optional Over-The-Air (OTA) application updates via Expo Updates if enabled by the user.
 - No analytics trackers (such as Google Firebase, Facebook Pixel, or Mixpanel) are bundled into the application binary.
 
@@ -49,7 +49,7 @@ While data is stored in the operating system's sandboxed storage:
 
 ## 6. Children's Privacy
 
-PocketWallet is not directed to individuals under the age of 13. Because no data is collected externally, we never knowingly harvest personal identifiers from minors.
+VOUT is not directed to individuals under the age of 13. Because no data is collected externally, we never knowingly harvest personal identifiers from minors.
 
 ## 7. Updates to This Privacy Policy
 
@@ -57,7 +57,7 @@ We may periodically revise this Privacy Policy to reflect software improvements 
 
 ## 8. Privacy Contact
 
-If you have questions or concerns regarding privacy in PocketWallet:
+If you have questions or concerns regarding privacy in VOUT:
 - **Data Controller:** Agustin Milesi
 - **Email:** agusmilesi2002@gmail.com
 - **GitHub:** [https://github.com/AgustinMilesi/expenses](https://github.com/AgustinMilesi/expenses)
