@@ -56,4 +56,14 @@ export interface UserPreferences {
   shakeSensitivity?: ShakeSensitivity;
 }
 
+export interface VoutAccount {
+  id: string;
+  email: string;
+  name: string;
+  membershipTier: 'standard' | 'vip' | 'founder';
+  memberSince: string;
+  linkedEcosystemApps: ('pocket' | 'retail' | 'cargo' | 'inbox')[];
+  lastSyncAt: string;
+}
+
 export type CategoryFilter = 'all' | 'fixed' | 'subscription' | 'leisure' | 'micro';

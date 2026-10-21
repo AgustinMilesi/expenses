@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import {
   View,
   Text,
@@ -14,10 +14,12 @@ import {
   AppTheme,
   Currency,
   ShakeSensitivity,
+  VoutAccount,
 } from '../types/expense';
 import { ACCENT_PALETTES, ThemeColors } from '../utils/theme';
 import { getTranslations, LOCALES } from '../utils/i18n';
 import { CURRENCY_INFO } from '../utils/formatters';
+import { loadVoutAccount, saveVoutAccount } from '../utils/storage';
 
 interface PreferencesModalProps {
   visible: boolean;
@@ -60,6 +62,33 @@ export const PreferencesModal: React.FC<PreferencesModalProps> = ({
 }) => {
   const t = getTranslations(currentLocale);
   const isDark = currentTheme === 'dark';
+
+  const [account, setAccount] = useState<VoutAccount | null>(null);
+
+  useEffect(() => {
+    if (visible) {
+      loadVoutAccount().then(setAccount);
+    }
+  }, [visible]);
+
+  const handleConnectVout = async () => {
+    const demoAccount: VoutAccount = {
+      id: 'vout_usr_84920',
+      email: 'agustin@vout.io',
+      name: 'Agustin Milesi',
+      membershipTier: 'vip',
+      memberSince: '2026-10-21',
+      linkedEcosystemApps: ['pocket', 'retail', 'cargo', 'inbox'],
+      lastSyncAt: new Date().toLocaleTimeString(),
+    };
+    await saveVoutAccount(demoAccount);
+    setAccount(demoAccount);
+  };
+
+  const handleDisconnectVout = async () => {
+    await saveVoutAccount(null);
+    setAccount(null);
+  };
   const currencies: Currency[] = ['USD', 'ARS', 'EUR', 'CNY', 'BRL'];
 
   return (
@@ -101,6 +130,94 @@ export const PreferencesModal: React.FC<PreferencesModalProps> = ({
             showsVerticalScrollIndicator={false}
             contentContainerStyle={styles.scrollContent}
           >
+            {/* 0. Cuenta VOUT (VOUT ID) Unified Ecosystem Section */}
+            <View style={styles.section}>
+              <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: 8 }}>
+                <Text style={[styles.sectionLabel, { color: colors.textDim, marginBottom: 0 }]}>
+                  CUENTA VOUT (VOUT ID)
+                </Text>
+                <View style={{ backgroundColor: colors.card, paddingHorizontal: 6, paddingVertical: 2, borderRadius: 8, borderWidth: 1, borderColor: colors.lime }}>
+                  <Text style={{ color: colors.lime, fontSize: 9, fontWeight: '900' }}>MEMBRESÍA VIP</Text>
+                </View>
+              </View>
+
+              {account ? (
+                <View
+                  style={[
+                    styles.accountCard,
+                    {
+                      backgroundColor: colors.cardLight,
+                      borderColor: colors.lime,
+                    },
+                  ]}
+                >
+                  <View style={{ flexDirection: 'row', alignItems: 'center', gap: 12 }}>
+                    <View style={[styles.accountAvatar, { backgroundColor: colors.lime }]}>
+                      <Text style={{ color: colors.limeText, fontWeight: '900', fontSize: 16 }}>V</Text>
+                    </View>
+                    <View style={{ flex: 1 }}>
+                      <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
+                        <Text style={[styles.accountName, { color: colors.text }]}>
+                          {account.name}
+                        </Text>
+                        <Ionicons name="checkmark-circle" size={15} color={colors.lime} />
+                      </View>
+                      <Text style={[styles.accountEmail, { color: colors.textMuted }]}>
+                        {account.email}
+                      </Text>
+                      <Text style={[styles.accountSync, { color: colors.lime }]}>
+                        ⚡ Ecosistema vinculado (Retail, Cargo, Inbox)
+                      </Text>
+                    </View>
+                  </View>
+
+                  <View style={{ marginTop: 12, paddingTop: 10, borderTopWidth: 1, borderTopColor: colors.cardBorder, flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
+                    <Text style={{ fontSize: 11, color: colors.textDim }}>
+                      Sincronizado: {account.lastSyncAt}
+                    </Text>
+                    <TouchableOpacity onPress={handleDisconnectVout}>
+                      <Text style={{ fontSize: 11, color: colors.danger, fontWeight: '700' }}>
+                        Desconectar
+                      </Text>
+                    </TouchableOpacity>
+                  </View>
+                </View>
+              ) : (
+                <View
+                  style={[
+                    styles.accountCard,
+                    {
+                      backgroundColor: colors.cardLight,
+                      borderColor: colors.cardBorder,
+                    },
+                  ]}
+                >
+                  <View style={{ flexDirection: 'row', alignItems: 'center', gap: 10 }}>
+                    <View style={[styles.accountAvatar, { backgroundColor: colors.card, borderColor: colors.cardBorder, borderWidth: 1 }]}>
+                      <Ionicons name="key-outline" size={18} color={colors.lime} />
+                    </View>
+                    <View style={{ flex: 1 }}>
+                      <Text style={[styles.accountName, { color: colors.text }]}>
+                        Conectar Cuenta VOUT
+                      </Text>
+                      <Text style={[styles.accountEmail, { color: colors.textMuted, marginTop: 2 }]}>
+                        Tu llave unificada para Retail POS, Cargo e Inbox.
+                      </Text>
+                    </View>
+                  </View>
+                  <TouchableOpacity
+                    onPress={handleConnectVout}
+                    style={[styles.connectBtn, { backgroundColor: colors.lime }]}
+                    activeOpacity={0.8}
+                  >
+                    <Text style={[styles.connectBtnText, { color: colors.limeText }]}>
+                      ⚡ Vincular Cuenta VOUT
+                    </Text>
+                  </TouchableOpacity>
+                </View>
+              )}
+            </View>
+
             {/* 1. Mode: Light vs Dark */}
             <View style={styles.section}>
               <Text style={[styles.sectionLabel, { color: colors.textDim }]}>
@@ -781,6 +898,43 @@ const styles = StyleSheet.create({
   footerSection: {
     marginTop: 10,
     alignItems: 'center',
+  },
+  accountCard: {
+    borderRadius: 20,
+    borderWidth: 1,
+    padding: 16,
+  },
+  accountAvatar: {
+    width: 38,
+    height: 38,
+    borderRadius: 19,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  accountName: {
+    fontSize: 14,
+    fontWeight: '800',
+  },
+  accountEmail: {
+    fontSize: 12,
+  },
+  accountSync: {
+    fontSize: 11,
+    fontWeight: '700',
+    marginTop: 2,
+  },
+  connectBtn: {
+    marginTop: 12,
+    borderRadius: 14,
+    paddingVertical: 10,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  connectBtnText: {
+    fontSize: 12,
+    fontWeight: '900',
+    textTransform: 'uppercase',
+    letterSpacing: 0.5,
   },
   versionText: {
     fontSize: 11,

@@ -4,11 +4,13 @@ import {
   ExpenseItem,
   MonthlyBudget,
   UserPreferences,
+  VoutAccount,
 } from '../types/expense';
 
 const PREFS_STORAGE_KEY = '@pocket_preferences_v5';
 const BUDGET_STORAGE_KEY = '@pocket_budget_v5_live';
 const EXPENSES_STORAGE_KEY = '@pocket_expenses_v5_live';
+const VOUT_ACCOUNT_STORAGE_KEY = '@vout_account_session_v1';
 
 export const DEFAULT_PREFERENCES: UserPreferences = {
   theme: 'dark',
@@ -130,4 +132,27 @@ export async function clearAllExpenses(): Promise<ExpenseItem[]> {
     console.error('Error clearing expenses:', err);
   }
   return [];
+}
+
+// VOUT ID Unified Account Session
+export async function loadVoutAccount(): Promise<VoutAccount | null> {
+  try {
+    const raw = await AsyncStorage.getItem(VOUT_ACCOUNT_STORAGE_KEY);
+    if (raw) return JSON.parse(raw);
+  } catch (err) {
+    console.warn('Error loading Vout account:', err);
+  }
+  return null;
+}
+
+export async function saveVoutAccount(account: VoutAccount | null): Promise<void> {
+  try {
+    if (!account) {
+      await AsyncStorage.removeItem(VOUT_ACCOUNT_STORAGE_KEY);
+    } else {
+      await AsyncStorage.setItem(VOUT_ACCOUNT_STORAGE_KEY, JSON.stringify(account));
+    }
+  } catch (err) {
+    console.warn('Error saving Vout account:', err);
+  }
 }

@@ -109,9 +109,14 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({
             <Ionicons name="person" size={20} color={colors.lime} />
           </View>
           <View>
-            <Text style={[styles.profileName, { color: colors.text }]}>
-              {t.appName}
-            </Text>
+            <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
+              <Text style={[styles.profileName, { color: colors.text }]}>
+                {t.appName}
+              </Text>
+              <View style={{ backgroundColor: colors.card, paddingHorizontal: 6, paddingVertical: 1.5, borderRadius: 8, borderWidth: 1, borderColor: colors.lime }}>
+                <Text style={{ color: colors.lime, fontSize: 8, fontWeight: '900' }}>⚡ VOUT ID</Text>
+              </View>
+            </View>
             <Text style={[styles.profileTagline, { color: colors.textMuted }]}>
               {t.appTagline}
             </Text>
