@@ -3,7 +3,7 @@
 A high-performance personal expense and recurring commitments manager built with **React Native**, **Expo (TypeScript)**, and **NativeWind (Tailwind CSS)**. Designed with a striking **Cyber Lime & Deep Charcoal** aesthetic, engineered specifically for tracking **daily expenses**, **monthly subscriptions**, **fixed utility bills**, and **micro-expenses** (coffee, snacks, transport) with instant numerical keypad entry and disposable balance calculations.
 
 <p align="left">
-  <a href="https://expo.dev/artifacts/eas/4KlACYkfHxU14bITNmFSRYdkuBrz3MH7FVkXu-XggWs.apk"><img src="https://img.shields.io/badge/Download%20APK-Android%20Direct-C6F827?style=for-the-badge&logo=android&logoColor=black" alt="Download APK" /></a>
+  <a href="https://expo.dev/accounts/agustinmilesi/projects/pocket-expenses/builds/e96134f5-2f11-4b67-9a96-d65a1b371b51"><img src="https://img.shields.io/badge/Download%20APK-VOLT%20v1.0.0-C6F827?style=for-the-badge&logo=android&logoColor=black" alt="Download VOLT APK" /></a>
   <a href="https://expo.dev/accounts/agustinmilesi/projects/pocket-expenses"><img src="https://img.shields.io/badge/Expo%20Project-pocket--expenses-4630EB?style=for-the-badge&logo=expo" alt="Expo Project" /></a>
   <img src="https://img.shields.io/badge/Platform-iOS%20%7C%20Android%20%7C%20Web-black?style=for-the-badge&logo=expo" alt="Expo Platform" />
   <img src="https://img.shields.io/badge/Expo-SDK%2058-000020?style=for-the-badge&logo=expo" alt="Expo SDK" />
