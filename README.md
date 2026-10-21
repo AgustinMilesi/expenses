@@ -1,4 +1,4 @@
-# ⚡ PocketExpenses — Cyber-Lime Expenses, Subscriptions & Micro-spending Tracker
+# ⚡ VOLT — Cyber-Lime Expenses, Subscriptions & Micro-spending Tracker
 
 A high-performance personal expense and recurring commitments manager built with **React Native**, **Expo (TypeScript)**, and **NativeWind (Tailwind CSS)**. Designed with a striking **Cyber Lime & Deep Charcoal** aesthetic, engineered specifically for tracking **daily expenses**, **monthly subscriptions**, **fixed utility bills**, and **micro-expenses** (coffee, snacks, transport) with instant numerical keypad entry and disposable balance calculations.
 
@@ -26,7 +26,7 @@ A high-performance personal expense and recurring commitments manager built with
 
 ## 🎨 Visual Identity & Screen Architecture
 
-PocketExpenses pairs high-contrast neo-fintech aesthetics with disciplined budget tracking:
+VOLT pairs high-contrast neo-fintech aesthetics with disciplined budget tracking:
 
 ### 1. 🏠 Home / Dashboard
 - **Profile & Quick Settings:** User header with live savings streak indicator, alerts bell, and interface preferences trigger.
@@ -89,7 +89,7 @@ Imported and unified with the enterprise suite (`erp`, `saas`, `sap`, `contact-p
 
 ## ⚖️ Legal & Regulatory Compliance
 
-PocketExpenses adheres to global consumer privacy and data sovereignty standards:
+VOLT adheres to global consumer privacy and data sovereignty standards:
 - [Terms of Service (TERMS_OF_SERVICE.md)](./TERMS_OF_SERVICE.md)
 - [Privacy Policy (PRIVACY_POLICY.md)](./PRIVACY_POLICY.md)
 - [Cookie & Storage Policy (COOKIES.md)](./COOKIES.md)

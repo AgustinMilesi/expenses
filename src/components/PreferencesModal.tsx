@@ -503,7 +503,7 @@ export const PreferencesModal: React.FC<PreferencesModalProps> = ({
             {/* Version & Close Button */}
             <View style={styles.footerSection}>
               <Text style={[styles.versionText, { color: colors.textDim }]}>
-                PocketWallet v2.0.0 • React Native &amp; Expo
+                VOLT v1.0.0 • React Native &amp; Expo
               </Text>
               <TouchableOpacity
                 onPress={onClose}

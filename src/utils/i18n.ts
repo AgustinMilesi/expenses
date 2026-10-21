@@ -3,7 +3,7 @@ import { AppLocale, ExpenseCategory } from '../types/expense';
 export const TRANSLATIONS = {
   es: {
     // Header
-    appName: 'PocketExpenses',
+    appName: 'VOLT',
     appTagline: 'Control de Gastos, Subs & Microgastos',
     notifications: 'Alertas',
     savingsStreak: 'Racha de Ahorro',
@@ -133,7 +133,7 @@ export const TRANSLATIONS = {
 
   en: {
     // Header
-    appName: 'PocketExpenses',
+    appName: 'VOLT',
     appTagline: 'Expenses, Subs & Micro-spending',
     notifications: 'Alerts',
     savingsStreak: 'Savings Streak',
@@ -263,7 +263,7 @@ export const TRANSLATIONS = {
 
   pt: {
     // Header
-    appName: 'PocketExpenses',
+    appName: 'VOLT',
     appTagline: 'Gastos, Assinaturas e Microgastos',
     notifications: 'Alertas',
     savingsStreak: 'Sequência de Economia',
@@ -393,7 +393,7 @@ export const TRANSLATIONS = {
 
   zh: {
     // Header
-    appName: 'PocketExpenses',
+    appName: 'VOLT',
     appTagline: '开支、订阅与微支出管理',
     notifications: '通知提醒',
     savingsStreak: '存钱打卡',
