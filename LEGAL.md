@@ -23,6 +23,6 @@ VOUT maintains complete legal documentation for transparency and user protection
 
 ## 3. Contact & Rights Administration
 
-- **Entity / Developer:** Agustin Milesi
-- **Email:** agusmilesi2002@gmail.com
+- **Entity / Developer:** VOUT Cloud Organization
+- **Email:** legal@vout.network
 - **GitHub:** [https://github.com/AgustinMilesi/expenses](https://github.com/AgustinMilesi/expenses)

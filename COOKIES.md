@@ -38,6 +38,6 @@ You maintain complete control over this stored data at all times:
 ## 5. Inquiries
 
 For questions regarding local caching or device storage policies:
-- **Developer:** Agustin Milesi
-- **Email:** agusmilesi2002@gmail.com
+- **Developer:** VOUT Cloud Organization
+- **Email:** legal@vout.network
 - **Repository:** [https://github.com/AgustinMilesi/expenses](https://github.com/AgustinMilesi/expenses)

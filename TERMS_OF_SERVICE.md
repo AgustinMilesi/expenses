@@ -32,7 +32,7 @@ The data, reports, ratios, and balance metrics presented by VOUT are provided st
 
 ## 5. Intellectual Property Rights
 
-All trademarks, visual designs, neon-lime aesthetic palettes, UI component architectures, source code, logos, and graphic layouts within VOUT are the exclusive intellectual property of Agustin Milesi and VOUT contributors.
+All trademarks, visual designs, neon-lime aesthetic palettes, UI component architectures, source code, logos, and graphic layouts within VOUT are the exclusive intellectual property of VOUT Cloud Organization and VOUT contributors.
 
 - You are granted a limited, revocable, non-exclusive, non-transferable license to use the app for personal, non-commercial purposes.
 - You may not decompile, reverse-engineer, sell, or redistribute the proprietary visual assets without prior written consent.
@@ -55,6 +55,6 @@ These Terms shall be governed by and construed in accordance with the laws appli
 ## 9. Contact Information
 
 For inquiries regarding these Terms of Service or user legal rights:
-- **Developer:** Agustin Milesi
-- **Email:** agusmilesi2002@gmail.com
+- **Developer:** VOUT Cloud Organization
+- **Email:** legal@vout.network
 - **Repository:** [https://github.com/AgustinMilesi/expenses](https://github.com/AgustinMilesi/expenses)

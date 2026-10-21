@@ -58,6 +58,6 @@ We may periodically revise this Privacy Policy to reflect software improvements 
 ## 8. Privacy Contact
 
 If you have questions or concerns regarding privacy in VOUT:
-- **Data Controller:** Agustin Milesi
-- **Email:** agusmilesi2002@gmail.com
+- **Data Controller:** VOUT Cloud Organization
+- **Email:** legal@vout.network
 - **GitHub:** [https://github.com/AgustinMilesi/expenses](https://github.com/AgustinMilesi/expenses)

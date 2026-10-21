@@ -74,8 +74,8 @@ export const PreferencesModal: React.FC<PreferencesModalProps> = ({
   const handleConnectVout = async () => {
     const demoAccount: VoutAccount = {
       id: 'vout_usr_84920',
-      email: 'agustin@vout.io',
-      name: 'Agustin Milesi',
+      email: 'member@vout.network',
+      name: 'VOUT Founding Member',
       membershipTier: 'vip',
       memberSince: '2026-10-21',
       linkedEcosystemApps: ['pocket', 'retail', 'cargo', 'inbox'],
