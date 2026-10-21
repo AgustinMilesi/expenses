@@ -1,6 +1,6 @@
 <div align="center">
 
-# 📱 VOUT Pocket
+# 📱 VOUT
 ### Flagship Mobile Expense Companion, Budgeting & Real-Time Sync
 
 [![VOUT Ecosystem](https://img.shields.io/badge/VOUT-Ecosystem-C6F827?style=for-the-badge&logoColor=black&labelColor=0A0E14)](https://github.com/AgustinMilesi)
@@ -18,7 +18,7 @@
 
 ## 🎯 Visión & Capacidades Móviles
 
-**VOUT Pocket** es la app nativa que centraliza compromisos financieros, suscripciones y micro-gastos cotidianos con arquitectura fuera de línea y privacidad total:
+**VOUT** es la app nativa que centraliza compromisos financieros, suscripciones y micro-gastos cotidianos con arquitectura fuera de línea y privacidad total:
 - ⚡ **Saldo Disponible ("Safe to Spend"):** Cálculo en tiempo real de `Ingreso Neto Mensual - Gastos Fijos y Suscripciones`, indicando con exactitud el capital libre disponible.
 - 🔁 **Gestor de Suscripciones & Servicios:** Monitoreo de streaming (Netflix, Spotify, etc.), membresías y servicios con recordatorio de fecha de vencimiento y toggle de pago en 1 toque.
 - ☕ **Teclado Rápido de Micro-gastos:** Pad numérico 3x4 personalizado para registrar gastos pequeños (café, transporte, snacks) en menos de 2 segundos.
@@ -47,5 +47,5 @@ npm run start
 ---
 
 <div align="center">
-  <p>© 2026 VOUT Pocket · Flagship Mobile Financial Design System.</p>
+  <p>© 2026 VOUT · Flagship Mobile Financial Design System.</p>
 </div>
