@@ -48,6 +48,7 @@ export interface MonthlyBudget {
   incomeType?: IncomeType;
   extraIncomes?: ExtraIncomeItem[];
   rolloverSurplus?: number;
+  startingBalance?: number;
   reconciledForMonth?: string;
   currency: Currency;
   savingsGoal: number;
@@ -80,6 +81,8 @@ export interface VoutAccount {
   memberSince: string;
   linkedEcosystemApps: ('pocket' | 'retail' | 'cargo' | 'inbox')[];
   lastSyncAt: string;
+  authToken?: string;
+  cloudApiUrl?: string;
 }
 
 export type CategoryFilter = 'all' | 'fixed' | 'subscription' | 'leisure' | 'micro';

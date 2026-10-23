@@ -560,6 +560,12 @@ export default function App() {
             setLegalModalType(type);
           }}
           colors={colors}
+          currentBudget={budget}
+          currentExpenses={expenses}
+          onSyncComplete={(newBudget, newExpenses) => {
+            setBudget(newBudget);
+            setExpenses(newExpenses);
+          }}
         />
 
         {/* 2. Edit Monthly Income Modal */}

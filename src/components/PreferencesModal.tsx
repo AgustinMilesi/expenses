@@ -6,6 +6,9 @@ import {
   TouchableOpacity,
   ScrollView,
   StyleSheet,
+  TextInput,
+  ActivityIndicator,
+  Alert,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import {
@@ -15,12 +18,21 @@ import {
   Currency,
   ShakeSensitivity,
   VoutAccount,
+  MonthlyBudget,
+  ExpenseItem,
+  ExtraIncomeItem,
 } from '../types/expense';
 import { ACCENT_PALETTES, ThemeColors } from '../utils/theme';
 import { getTranslations, LOCALES } from '../utils/i18n';
 import { CURRENCY_INFO } from '../utils/formatters';
 import { loadVoutAccount, saveVoutAccount } from '../utils/storage';
 import { APP_VERSION } from '../utils/version';
+import {
+  loginToVoutCloud,
+  registerToVoutCloud,
+  syncWithVoutCloud,
+  DEFAULT_VOUT_WEB_URL,
+} from '../utils/syncApi';
 
 interface PreferencesModalProps {
   visible: boolean;
@@ -40,6 +52,9 @@ interface PreferencesModalProps {
   onCheckUpdates: () => void;
   onOpenLegal: (type: 'terms' | 'privacy' | 'cookies') => void;
   colors: ThemeColors;
+  currentBudget?: MonthlyBudget;
+  currentExpenses?: ExpenseItem[];
+  onSyncComplete?: (budget: MonthlyBudget, expenses: ExpenseItem[], extraIncomes: ExtraIncomeItem[]) => void;
 }
 
 export const PreferencesModal: React.FC<PreferencesModalProps> = ({
@@ -60,11 +75,23 @@ export const PreferencesModal: React.FC<PreferencesModalProps> = ({
   onCheckUpdates,
   onOpenLegal,
   colors,
+  currentBudget,
+  currentExpenses,
+  onSyncComplete,
 }) => {
   const t = getTranslations(currentLocale);
   const isDark = currentTheme === 'dark';
 
   const [account, setAccount] = useState<VoutAccount | null>(null);
+  const [showAuthForm, setShowAuthForm] = useState(false);
+  const [authMode, setAuthMode] = useState<'login' | 'register'>('login');
+  const [authEmail, setAuthEmail] = useState('');
+  const [authPassword, setAuthPassword] = useState('');
+  const [authName, setAuthName] = useState('');
+  const [serverUrl, setServerUrl] = useState(DEFAULT_VOUT_WEB_URL);
+  const [isAuthLoading, setIsAuthLoading] = useState(false);
+  const [isSyncing, setIsSyncing] = useState(false);
+  const [authError, setAuthError] = useState<string | null>(null);
 
   useEffect(() => {
     if (visible) {
@@ -72,18 +99,78 @@ export const PreferencesModal: React.FC<PreferencesModalProps> = ({
     }
   }, [visible]);
 
-  const handleConnectVout = async () => {
-    const demoAccount: VoutAccount = {
-      id: 'vout_usr_84920',
-      email: 'member@vout.network',
-      name: 'VOUT Founding Member',
-      membershipTier: 'vip',
-      memberSince: '2026-10-21',
-      linkedEcosystemApps: ['pocket', 'retail', 'cargo', 'inbox'],
-      lastSyncAt: new Date().toLocaleTimeString(),
-    };
-    await saveVoutAccount(demoAccount);
-    setAccount(demoAccount);
+  const handleAuthSubmit = async () => {
+    if (!authEmail.trim() || !authPassword.trim()) {
+      setAuthError('Por favor completa todos los campos');
+      return;
+    }
+    if (authMode === 'register' && !authName.trim()) {
+      setAuthError('Por favor ingresa tu nombre');
+      return;
+    }
+
+    setAuthError(null);
+    setIsAuthLoading(true);
+
+    try {
+      const res =
+        authMode === 'login'
+          ? await loginToVoutCloud(authEmail, authPassword, serverUrl)
+          : await registerToVoutCloud(authName, authEmail, authPassword, serverUrl);
+
+      if (res.error || !res.account) {
+        setAuthError(res.error || 'Error de autenticación');
+        return;
+      }
+
+      setAccount(res.account);
+      setShowAuthForm(false);
+      setAuthPassword('');
+
+      if (currentBudget && currentExpenses) {
+        handleSyncNow(res.account);
+      }
+    } catch {
+      setAuthError('Error de conexión con el servidor VOUT');
+    } finally {
+      setIsAuthLoading(false);
+    }
+  };
+
+  const handleSyncNow = async (targetAccount = account) => {
+    if (!targetAccount) return;
+    if (!currentBudget || !currentExpenses) return;
+
+    setIsSyncing(true);
+    try {
+      const result = await syncWithVoutCloud(
+        targetAccount,
+        currentBudget,
+        currentExpenses,
+        currentBudget.extraIncomes || [],
+        {
+          theme: currentTheme,
+          accent: currentAccent,
+          locale: currentLocale,
+          currency: currentCurrency,
+        }
+      );
+
+      if (result.success && result.budget && result.expenses) {
+        const updated = await loadVoutAccount();
+        if (updated) setAccount(updated);
+        if (onSyncComplete) {
+          onSyncComplete(result.budget, result.expenses, result.extraIncomes || []);
+        }
+        Alert.alert('VOUT Cloud', '¡Sincronización en la nube completada con éxito!');
+      } else {
+        Alert.alert('VOUT Cloud', result.error || 'Error al sincronizar datos');
+      }
+    } catch {
+      Alert.alert('VOUT Cloud', 'Fallo de red al conectar con el servidor');
+    } finally {
+      setIsSyncing(false);
+    }
   };
 
   const handleDisconnectVout = async () => {
@@ -167,19 +254,211 @@ export const PreferencesModal: React.FC<PreferencesModalProps> = ({
                         {account.email}
                       </Text>
                       <Text style={[styles.accountSync, { color: colors.lime }]}>
-                        ⚡ Ecosistema vinculado (Retail, Cargo, Inbox)
+                        ⚡ Vinculado a Nube VOUT
                       </Text>
                     </View>
                   </View>
 
-                  <View style={{ marginTop: 12, paddingTop: 10, borderTopWidth: 1, borderTopColor: colors.cardBorder, flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
-                    <Text style={{ fontSize: 11, color: colors.textDim }}>
-                      Sincronizado: {account.lastSyncAt}
-                    </Text>
-                    <TouchableOpacity onPress={handleDisconnectVout}>
-                      <Text style={{ fontSize: 11, color: colors.danger, fontWeight: '700' }}>
-                        Desconectar
+                  {/* Sync Action & Timestamp */}
+                  <View style={{ marginTop: 14, paddingTop: 12, borderTopWidth: 1, borderTopColor: colors.cardBorder, flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
+                    <View>
+                      <Text style={{ fontSize: 11, color: colors.textDim }}>
+                        Última sinc: {account.lastSyncAt || 'Reciente'}
                       </Text>
+                    </View>
+                    <TouchableOpacity
+                      onPress={() => handleSyncNow()}
+                      disabled={isSyncing}
+                      style={{
+                        backgroundColor: colors.lime,
+                        paddingHorizontal: 12,
+                        paddingVertical: 6,
+                        borderRadius: 10,
+                        flexDirection: 'row',
+                        alignItems: 'center',
+                        gap: 6,
+                      }}
+                    >
+                      {isSyncing ? (
+                        <ActivityIndicator size="small" color={colors.limeText} />
+                      ) : (
+                        <Ionicons name="cloud-upload-outline" size={14} color={colors.limeText} />
+                      )}
+                      <Text style={{ fontSize: 11, fontWeight: '800', color: colors.limeText }}>
+                        {isSyncing ? 'Sincronizando...' : 'Sincronizar'}
+                      </Text>
+                    </TouchableOpacity>
+                  </View>
+
+                  <TouchableOpacity
+                    onPress={handleDisconnectVout}
+                    style={{ alignSelf: 'center', marginTop: 10 }}
+                  >
+                    <Text style={{ fontSize: 11, color: colors.danger, fontWeight: '700' }}>
+                      Cerrar Sesión / Desconectar
+                    </Text>
+                  </TouchableOpacity>
+                </View>
+              ) : showAuthForm ? (
+                <View
+                  style={[
+                    styles.accountCard,
+                    {
+                      backgroundColor: colors.cardLight,
+                      borderColor: colors.cardBorder,
+                    },
+                  ]}
+                >
+                  {/* Auth Mode Toggle */}
+                  <View style={{ flexDirection: 'row', borderRadius: 10, backgroundColor: colors.card, padding: 3, marginBottom: 12 }}>
+                    <TouchableOpacity
+                      onPress={() => { setAuthMode('login'); setAuthError(null); }}
+                      style={{
+                        flex: 1,
+                        paddingVertical: 7,
+                        borderRadius: 8,
+                        backgroundColor: authMode === 'login' ? colors.lime : 'transparent',
+                        alignItems: 'center',
+                      }}
+                    >
+                      <Text style={{ fontSize: 11, fontWeight: '800', color: authMode === 'login' ? colors.limeText : colors.textMuted }}>
+                        Iniciar Sesión
+                      </Text>
+                    </TouchableOpacity>
+                    <TouchableOpacity
+                      onPress={() => { setAuthMode('register'); setAuthError(null); }}
+                      style={{
+                        flex: 1,
+                        paddingVertical: 7,
+                        borderRadius: 8,
+                        backgroundColor: authMode === 'register' ? colors.lime : 'transparent',
+                        alignItems: 'center',
+                      }}
+                    >
+                      <Text style={{ fontSize: 11, fontWeight: '800', color: authMode === 'register' ? colors.limeText : colors.textMuted }}>
+                        Crear Cuenta
+                      </Text>
+                    </TouchableOpacity>
+                  </View>
+
+                  {/* Error banner */}
+                  {authError && (
+                    <View style={{ backgroundColor: 'rgba(239, 68, 68, 0.15)', borderColor: 'rgba(239, 68, 68, 0.4)', borderWidth: 1, padding: 8, borderRadius: 8, marginBottom: 10 }}>
+                      <Text style={{ color: '#F87171', fontSize: 11, textAlign: 'center', fontWeight: '600' }}>
+                        {authError}
+                      </Text>
+                    </View>
+                  )}
+
+                  {authMode === 'register' && (
+                    <View style={{ marginBottom: 10 }}>
+                      <Text style={{ fontSize: 10, fontWeight: '700', color: colors.textMuted, marginBottom: 4, textTransform: 'uppercase' }}>
+                        Tu Nombre
+                      </Text>
+                      <TextInput
+                        value={authName}
+                        onChangeText={setAuthName}
+                        placeholder="Ej: Agustín"
+                        placeholderTextColor={colors.textDim}
+                        style={{
+                          backgroundColor: colors.card,
+                          borderColor: colors.cardBorder,
+                          borderWidth: 1,
+                          borderRadius: 10,
+                          paddingHorizontal: 12,
+                          paddingVertical: 8,
+                          color: colors.text,
+                          fontSize: 13,
+                        }}
+                      />
+                    </View>
+                  )}
+
+                  <View style={{ marginBottom: 10 }}>
+                    <Text style={{ fontSize: 10, fontWeight: '700', color: colors.textMuted, marginBottom: 4, textTransform: 'uppercase' }}>
+                      Correo Electrónico
+                    </Text>
+                    <TextInput
+                      value={authEmail}
+                      onChangeText={setAuthEmail}
+                      autoCapitalize="none"
+                      keyboardType="email-address"
+                      placeholder="tu@correo.com"
+                      placeholderTextColor={colors.textDim}
+                      style={{
+                        backgroundColor: colors.card,
+                        borderColor: colors.cardBorder,
+                        borderWidth: 1,
+                        borderRadius: 10,
+                        paddingHorizontal: 12,
+                        paddingVertical: 8,
+                        color: colors.text,
+                        fontSize: 13,
+                      }}
+                    />
+                  </View>
+
+                  <View style={{ marginBottom: 14 }}>
+                    <Text style={{ fontSize: 10, fontWeight: '700', color: colors.textMuted, marginBottom: 4, textTransform: 'uppercase' }}>
+                      Contraseña
+                    </Text>
+                    <TextInput
+                      value={authPassword}
+                      onChangeText={setAuthPassword}
+                      secureTextEntry
+                      placeholder="••••••••"
+                      placeholderTextColor={colors.textDim}
+                      style={{
+                        backgroundColor: colors.card,
+                        borderColor: colors.cardBorder,
+                        borderWidth: 1,
+                        borderRadius: 10,
+                        paddingHorizontal: 12,
+                        paddingVertical: 8,
+                        color: colors.text,
+                        fontSize: 13,
+                      }}
+                    />
+                  </View>
+
+                  {/* Actions */}
+                  <View style={{ flexDirection: 'row', gap: 8 }}>
+                    <TouchableOpacity
+                      onPress={() => setShowAuthForm(false)}
+                      style={{
+                        flex: 1,
+                        paddingVertical: 10,
+                        borderRadius: 12,
+                        borderWidth: 1,
+                        borderColor: colors.cardBorder,
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                      }}
+                    >
+                      <Text style={{ color: colors.textMuted, fontSize: 12, fontWeight: '700' }}>
+                        Cancelar
+                      </Text>
+                    </TouchableOpacity>
+
+                    <TouchableOpacity
+                      onPress={handleAuthSubmit}
+                      disabled={isAuthLoading}
+                      style={{
+                        flex: 2,
+                        paddingVertical: 10,
+                        borderRadius: 12,
+                        backgroundColor: colors.lime,
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                      }}
+                    >
+                      {isAuthLoading ? (
+                        <ActivityIndicator size="small" color={colors.limeText} />
+                      ) : (
+                        <Text style={{ color: colors.limeText, fontSize: 12, fontWeight: '900', textTransform: 'uppercase' }}>
+                          {authMode === 'login' ? 'Entrar y Sincronizar' : 'Crear Cuenta'}
+                        </Text>
+                      )}
                     </TouchableOpacity>
                   </View>
                 </View>
@@ -195,24 +474,24 @@ export const PreferencesModal: React.FC<PreferencesModalProps> = ({
                 >
                   <View style={{ flexDirection: 'row', alignItems: 'center', gap: 10 }}>
                     <View style={[styles.accountAvatar, { backgroundColor: colors.card, borderColor: colors.cardBorder, borderWidth: 1 }]}>
-                      <Ionicons name="key-outline" size={18} color={colors.lime} />
+                      <Ionicons name="cloud-outline" size={18} color={colors.lime} />
                     </View>
                     <View style={{ flex: 1 }}>
                       <Text style={[styles.accountName, { color: colors.text }]}>
-                        Conectar Cuenta VOUT
+                        Sincronización en la Nube VOUT
                       </Text>
                       <Text style={[styles.accountEmail, { color: colors.textMuted, marginTop: 2 }]}>
-                        Tu llave unificada para Retail POS, Cargo e Inbox.
+                        Conecta tu cuenta para sincronizar tus gastos con la web.
                       </Text>
                     </View>
                   </View>
                   <TouchableOpacity
-                    onPress={handleConnectVout}
+                    onPress={() => setShowAuthForm(true)}
                     style={[styles.connectBtn, { backgroundColor: colors.lime }]}
                     activeOpacity={0.8}
                   >
                     <Text style={[styles.connectBtnText, { color: colors.limeText }]}>
-                      ⚡ Vincular Cuenta VOUT
+                      ⚡ Vincular o Crear Cuenta
                     </Text>
                   </TouchableOpacity>
                 </View>
