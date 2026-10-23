@@ -1,7 +1,7 @@
 import { VoutAccount, MonthlyBudget, ExpenseItem, ExtraIncomeItem, UserPreferences } from '../types/expense';
 import { saveVoutAccount, saveBudget, saveExpenses, savePreferences } from './storage';
 
-export const DEFAULT_VOUT_WEB_URL = 'http://localhost:3000';
+export const DEFAULT_VOUT_WEB_URL = 'https://vout-web.vercel.app';
 
 export interface SyncResult {
   success: boolean;
