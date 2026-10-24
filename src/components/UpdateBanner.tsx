@@ -24,7 +24,9 @@ export const UpdateBanner: React.FC<UpdateBannerProps> = ({ colors, locale }) =>
           setUpdateAvailable(true);
         }
       } catch (error) {
-        console.log('Update check (safe to ignore in dev):', error);
+        if (__DEV__) {
+          console.warn('Update check (safe to ignore in dev):', error);
+        }
       }
     }
 
